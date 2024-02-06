@@ -1,0 +1,11 @@
+# Env
+*.env
+!example.env
+# Binary
+bin/*
+
+# Config
+config/*
+!config/example.config.yaml
+
+cmd/test
