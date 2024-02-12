@@ -12,7 +12,7 @@ type User struct {
 	Firstname  string         `json:"firstname"`
 	Middlename string         `json:"middlename,omitempty"`
 	Surname    string         `json:"surname"`
-	Email      string         `json:"email"`
+	Email      string         `json:"email" gorm:"unique"`
 	Password   string         `json:"password"`
 	Student    *Student       `json:"student,omitempty"`
 	Teacher    *Teacher       `json:"teacher,omitempty"`

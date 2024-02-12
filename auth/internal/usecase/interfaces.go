@@ -29,4 +29,29 @@ type (
 	StudentRepo interface {
 		Create(context.Context, dto.CreateStudent) (*entity.Student, error)
 	}
+	// Teacher
+	Teacher interface {
+		SignUp(context.Context, dto.CreateUser) (*entity.Teacher, error)
+	}
+	TeacherRepo interface {
+		Create(context.Context, dto.CreateTeacher) (*entity.Teacher, error)
+	}
+	// Faculty
+	Faculty interface {
+		Create(context.Context, dto.CreateFaculty) (*entity.Faculty, error)
+		FindAll(context.Context) ([]entity.Faculty, error)
+	}
+	FacultyRepo interface {
+		Create(context.Context, dto.CreateFaculty) (*entity.Faculty, error)
+		FindAll(context.Context) ([]entity.Faculty, error)
+	}
+	// Group
+	Group interface {
+		Create(context.Context, dto.CreateGroup) (*entity.Group, error)
+		FindAll(context.Context) ([]entity.Group, error)
+	}
+	GroupRepo interface {
+		Create(context.Context, dto.CreateGroup) (*entity.Group, error)
+		FindAll(context.Context) ([]entity.Group, error)
+	}
 )

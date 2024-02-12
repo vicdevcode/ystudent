@@ -17,5 +17,8 @@ func NewRouter(handler *gin.Engine, l *slog.Logger, uc usecase.UseCases) {
 	{
 		NewUser(h, uc.UserUseCase, l)
 		NewStudent(h, uc.StudentUseCase, uc.UserUseCase, l)
+		NewTeacher(h, uc.TeacherUseCase, uc.UserUseCase, l)
+		NewFaculty(h, uc.FacultyUseCase, l)
+		NewGroup(h, uc.GroupUseCase, l)
 	}
 }

@@ -21,3 +21,8 @@ type CreateUserWithStudent struct {
 	CreateUser
 	CreateStudent
 }
+
+type CreateUserWithTeacher struct {
+	CreateUser
+	CreateTeacher
+}
