@@ -17,7 +17,7 @@ type studentRoute struct {
 	l  *slog.Logger
 }
 
-func NewStudent(handler *gin.RouterGroup, us usecase.Student, uu usecase.User, l *slog.Logger) {
+func newStudent(handler *gin.RouterGroup, us usecase.Student, uu usecase.User, l *slog.Logger) {
 	r := &studentRoute{us, uu, l}
 	h := handler.Group("/student")
 	{
@@ -26,10 +26,6 @@ func NewStudent(handler *gin.RouterGroup, us usecase.Student, uu usecase.User, l
 }
 
 // SignUp
-
-type signUpStudentRequest struct {
-	dto.CreateUserWithStudent
-}
 
 type signUpStudentResponse struct {
 	*entity.User
@@ -45,17 +41,17 @@ type signUpGoodStudent struct {
 }
 
 func (r *studentRoute) signUp(c *gin.Context) {
-	var body signUpStudentRequest
+	var body dto.CreateUserAndStudent
 
 	if err := c.ShouldBindJSON(&body); err != nil {
-		errorJSONResponse(c, http.StatusBadRequest, err.Error())
+		badRequest(c, err.Error())
 		return
 	}
 
-	student, err := r.us.SignUp(c.Request.Context(), body.CreateUserWithStudent)
+	student, err := r.us.SignUp(c.Request.Context(), body)
 	if err != nil {
-		r.l.Error("sign up", slog.Any(err.Error(), err))
-		errorResponse(c, http.StatusInternalServerError, "sign up")
+		r.l.Error(err.Error())
+		internalServerError(c, err.Error())
 		return
 	}
 	user, err := r.uu.FindOne(c.Request.Context(), student.UserID)

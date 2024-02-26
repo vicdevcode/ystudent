@@ -10,6 +10,21 @@ import (
 )
 
 type (
+	// Admin
+	Admin interface {
+		FindOne(context.Context, string) (*entity.Admin, error)
+		UpdateRefreshToken(context.Context, dto.UpdateRefreshToken) (*entity.Admin, error)
+	}
+	AdminRepo interface {
+		FindOne(context.Context, string) (*entity.Admin, error)
+		UpdateRefreshToken(context.Context, dto.UpdateRefreshToken) (*entity.Admin, error)
+	}
+	// Jwt
+	Jwt interface {
+		CreateToken(dto.TokenPayload, bool) (string, error)
+		IsAuthorized(string) (bool, error)
+		ExtractIDFromToken(string) (string, error)
+	}
 	// User
 	User interface {
 		FindAll(context.Context) ([]entity.User, error)
@@ -22,9 +37,14 @@ type (
 		Create(context.Context, dto.CreateUser) (*entity.User, error)
 		Delete(context.Context, string) error
 	}
+	// Hash
+	Hash interface {
+		HashPassword(string) (string, error)
+		CheckPasswordHash(string, string) bool
+	}
 	// Student
 	Student interface {
-		SignUp(context.Context, dto.CreateUserWithStudent) (*entity.Student, error)
+		SignUp(context.Context, dto.CreateUserAndStudent) (*entity.Student, error)
 	}
 	StudentRepo interface {
 		Create(context.Context, dto.CreateStudent) (*entity.Student, error)

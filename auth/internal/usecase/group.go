@@ -13,7 +13,7 @@ type GroupUseCase struct {
 	ctxTimeout time.Duration
 }
 
-func NewGroup(r GroupRepo, t time.Duration) *GroupUseCase {
+func newGroup(r GroupRepo, t time.Duration) *GroupUseCase {
 	return &GroupUseCase{
 		repo:       r,
 		ctxTimeout: t,

@@ -14,7 +14,7 @@ type TeacherUseCase struct {
 	ctxTimeout  time.Duration
 }
 
-func NewTeacher(ur UserRepo, tr TeacherRepo, t time.Duration) *TeacherUseCase {
+func newTeacher(ur UserRepo, tr TeacherRepo, t time.Duration) *TeacherUseCase {
 	return &TeacherUseCase{
 		userRepo:    ur,
 		teacherRepo: tr,

@@ -15,7 +15,7 @@ type UserUseCase struct {
 	ctxTimeout time.Duration
 }
 
-func NewUser(r UserRepo, t time.Duration) *UserUseCase {
+func newUser(r UserRepo, t time.Duration) *UserUseCase {
 	return &UserUseCase{
 		repo:       r,
 		ctxTimeout: t,

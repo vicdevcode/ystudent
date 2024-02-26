@@ -14,11 +14,11 @@ type Server struct {
 }
 
 type Config struct {
-	Port            string
-	Host            string
-	ReadTimeout     time.Duration
-	WriteTimeout    time.Duration
-	ShutdownTimeout time.Duration
+	Port            string        `yaml:"port"             env-required:"true"`
+	Host            string        `yaml:"host"             env-required:"true"`
+	ReadTimeout     time.Duration `yaml:"read_timeout"     env-required:"true"`
+	WriteTimeout    time.Duration `yaml:"write_timeout"    env-required:"true"`
+	ShutdownTimeout time.Duration `yaml:"shutdown_timeout" env-required:"true"`
 }
 
 func New(handler http.Handler, cfg *Config, opts ...Option) *Server {

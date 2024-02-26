@@ -1,14 +1,17 @@
 package app
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	v1 "github.com/vicdevcode/ystudent/auth/internal/controller/http/v1"
+	"github.com/vicdevcode/ystudent/auth/internal/entity"
 	"github.com/vicdevcode/ystudent/auth/internal/usecase"
 	"github.com/vicdevcode/ystudent/auth/pkg/config"
 	"github.com/vicdevcode/ystudent/auth/pkg/httpserver"
@@ -19,9 +22,9 @@ import (
 func Run(cfg *config.Config) {
 	log := logger.New(cfg.Env)
 
-	log.Info(fmt.Sprintf("Starting server at Port: %s", cfg.Http.Port))
+	log.Info(fmt.Sprintf("Starting server at Port: %s", cfg.HTTP.Port))
 
-	db, err := postgres.New((*postgres.Config)(&cfg.DB))
+	db, err := postgres.New(&cfg.DB)
 	if err != nil {
 		logger.Fatal(log, "Failed connect to postgres:", err)
 	}
@@ -30,6 +33,29 @@ func Run(cfg *config.Config) {
 	// UseCases
 	usecases := usecase.New(cfg, db)
 
+	// Set Admin
+	var admin *entity.Admin
+	if err := db.Where("login = ?", cfg.Admin.Login).First(&admin).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			hashedPassword, err := usecases.HashUseCase.HashPassword(cfg.Admin.Password)
+			if err != nil {
+				log.Error(err.Error())
+				return
+			}
+			if err = db.Create(&entity.Admin{
+				Login:    cfg.Admin.Login,
+				Password: hashedPassword,
+			}).Error; err != nil {
+				log.Error(err.Error())
+				return
+			}
+		} else {
+			log.Error(err.Error())
+			return
+		}
+	}
+	log.Info("Admin available")
+
 	// HTTP SERVER
 	gin.SetMode(gin.ReleaseMode)
 	if cfg.Env == "local" {
@@ -37,7 +63,7 @@ func Run(cfg *config.Config) {
 	}
 	handler := gin.New()
 	v1.NewRouter(handler, log, usecases)
-	httpServer := httpserver.New(handler, ((*httpserver.Config)(&cfg.Http)))
+	httpServer := httpserver.New(handler, (&cfg.HTTP))
 
 	// Waiting signal
 	interrupt := make(chan os.Signal, 1)

@@ -7,7 +7,6 @@ import (
 
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
-	"github.com/vicdevcode/ystudent/auth/pkg/lib"
 	"github.com/vicdevcode/ystudent/auth/pkg/postgres"
 )
 
@@ -20,17 +19,12 @@ func NewUser(db *postgres.Postgres) *UserRepo {
 }
 
 func (r *UserRepo) Create(ctx context.Context, data dto.CreateUser) (*entity.User, error) {
-	hashedPassword, err := lib.HashPassword(data.Password)
-	if err != nil {
-		return nil, err
-	}
-
 	user := &entity.User{
 		Firstname:  data.Firstname,
 		Middlename: data.Middlename,
 		Surname:    data.Surname,
 		Email:      data.Email,
-		Password:   hashedPassword,
+		Password:   data.Password,
 	}
 	if err := r.WithContext(ctx).Create(user).Error; err != nil {
 		return nil, err
@@ -49,7 +43,11 @@ func (r *UserRepo) FindOne(ctx context.Context, id uuid.UUID) (*entity.User, err
 }
 
 func (r *UserRepo) FindAll(ctx context.Context) ([]entity.User, error) {
-	return []entity.User{}, nil
+	var users []entity.User
+	if err := r.WithContext(ctx).Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return users, nil
 }
 
 func (r *UserRepo) Delete(ctx context.Context, id string) error {

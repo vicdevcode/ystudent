@@ -13,7 +13,7 @@ type FacultyUseCase struct {
 	ctxTimeout time.Duration
 }
 
-func NewFaculty(r FacultyRepo, t time.Duration) *FacultyUseCase {
+func newFaculty(r FacultyRepo, t time.Duration) *FacultyUseCase {
 	return &FacultyUseCase{
 		repo:       r,
 		ctxTimeout: t,

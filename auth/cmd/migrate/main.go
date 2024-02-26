@@ -15,8 +15,9 @@ func main() {
 		log.Fatal(err)
 	}
 	db.AutoMigrate(
-		&entity.Faculty{},
+		&entity.Admin{},
 		&entity.User{},
+		&entity.Faculty{},
 		&entity.Teacher{},
 		&entity.Group{},
 		&entity.Student{},

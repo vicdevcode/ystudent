@@ -16,7 +16,7 @@ type facultyRoute struct {
 	l *slog.Logger
 }
 
-func NewFaculty(handler *gin.RouterGroup, u usecase.Faculty, l *slog.Logger) {
+func newFaculty(handler *gin.RouterGroup, u usecase.Faculty, l *slog.Logger) {
 	r := &facultyRoute{u, l}
 	h := handler.Group("/faculty")
 	{
@@ -25,27 +25,23 @@ func NewFaculty(handler *gin.RouterGroup, u usecase.Faculty, l *slog.Logger) {
 	}
 }
 
-type createFacultyRequest struct {
-	dto.CreateFaculty
-}
-
 type createFacultyResponse struct {
 	*entity.Faculty
 	dto.CUD
 }
 
 func (r *facultyRoute) create(c *gin.Context) {
-	var body createFacultyRequest
+	var body dto.CreateFaculty
 
 	if err := c.ShouldBindJSON(&body); err != nil {
-		errorJSONResponse(c, http.StatusBadRequest, err.Error())
+		badRequest(c, err.Error())
 		return
 	}
 
-	faculty, err := r.u.Create(c.Request.Context(), body.CreateFaculty)
+	faculty, err := r.u.Create(c.Request.Context(), body)
 	if err != nil {
-		r.l.Error("sign up", slog.Any(err.Error(), err))
-		errorResponse(c, http.StatusInternalServerError, err.Error())
+		r.l.Error(err.Error())
+		internalServerError(c, err.Error())
 		return
 	}
 
@@ -59,8 +55,8 @@ type findAllFacultyResponse struct {
 func (r *facultyRoute) findAll(c *gin.Context) {
 	faculties, err := r.u.FindAll(c.Request.Context())
 	if err != nil {
-		r.l.Error("sign up", slog.Any(err.Error(), err))
-		errorResponse(c, http.StatusInternalServerError, err.Error())
+		r.l.Error(err.Error())
+		internalServerError(c, err.Error())
 		return
 	}
 

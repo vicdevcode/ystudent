@@ -15,10 +15,11 @@ func NewRouter(handler *gin.Engine, l *slog.Logger, uc usecase.UseCases) {
 
 	h := handler.Group("/api/v1")
 	{
-		NewUser(h, uc.UserUseCase, l)
-		NewStudent(h, uc.StudentUseCase, uc.UserUseCase, l)
-		NewTeacher(h, uc.TeacherUseCase, uc.UserUseCase, l)
-		NewFaculty(h, uc.FacultyUseCase, l)
-		NewGroup(h, uc.GroupUseCase, l)
+		newUser(h, uc.UserUseCase, l)
+		newStudent(h, uc.StudentUseCase, uc.UserUseCase, l)
+		newTeacher(h, uc.TeacherUseCase, uc.UserUseCase, l)
+		newFaculty(h, uc.FacultyUseCase, l)
+		newGroup(h, uc.GroupUseCase, l)
+		newAuth(h, uc.AdminUseCase, uc.HashUseCase, uc.JwtUseCase, l)
 	}
 }

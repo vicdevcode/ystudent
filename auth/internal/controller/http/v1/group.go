@@ -16,7 +16,7 @@ type groupRoute struct {
 	l *slog.Logger
 }
 
-func NewGroup(handler *gin.RouterGroup, u usecase.Group, l *slog.Logger) {
+func newGroup(handler *gin.RouterGroup, u usecase.Group, l *slog.Logger) {
 	r := &groupRoute{u, l}
 	h := handler.Group("/group")
 	{
@@ -25,27 +25,23 @@ func NewGroup(handler *gin.RouterGroup, u usecase.Group, l *slog.Logger) {
 	}
 }
 
-type createGroupRequest struct {
-	dto.CreateGroup
-}
-
 type createGroupResponse struct {
 	*entity.Group
 	dto.CUD
 }
 
 func (r *groupRoute) create(c *gin.Context) {
-	var body createGroupRequest
+	var body dto.CreateGroup
 
 	if err := c.ShouldBindJSON(&body); err != nil {
-		errorJSONResponse(c, http.StatusBadRequest, err.Error())
+		badRequest(c, err.Error())
 		return
 	}
 
-	group, err := r.u.Create(c.Request.Context(), body.CreateGroup)
+	group, err := r.u.Create(c.Request.Context(), body)
 	if err != nil {
-		r.l.Error("sign up", slog.Any(err.Error(), err))
-		errorResponse(c, http.StatusInternalServerError, err.Error())
+		r.l.Error(err.Error())
+		internalServerError(c, err.Error())
 		return
 	}
 
@@ -59,8 +55,8 @@ type findAllGroupResponse struct {
 func (r *groupRoute) findAll(c *gin.Context) {
 	groups, err := r.u.FindAll(c.Request.Context())
 	if err != nil {
-		r.l.Error("sign up", slog.Any(err.Error(), err))
-		errorResponse(c, http.StatusInternalServerError, err.Error())
+		r.l.Error(err.Error())
+		internalServerError(c, err.Error())
 		return
 	}
 

@@ -14,7 +14,7 @@ type StudentUseCase struct {
 	ctxTimeout  time.Duration
 }
 
-func NewStudent(ur UserRepo, sr StudentRepo, t time.Duration) *StudentUseCase {
+func newStudent(ur UserRepo, sr StudentRepo, t time.Duration) *StudentUseCase {
 	return &StudentUseCase{
 		userRepo:    ur,
 		studentRepo: sr,
@@ -22,7 +22,7 @@ func NewStudent(ur UserRepo, sr StudentRepo, t time.Duration) *StudentUseCase {
 	}
 }
 
-func (uc *StudentUseCase) SignUp(c context.Context, data dto.CreateUserWithStudent) (*entity.Student, error) {
+func (uc *StudentUseCase) SignUp(c context.Context, data dto.CreateUserAndStudent) (*entity.Student, error) {
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
 	user, err := uc.userRepo.Create(ctx, data.CreateUser)

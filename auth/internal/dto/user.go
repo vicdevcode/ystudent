@@ -6,9 +6,9 @@ type User struct {
 }
 
 type Fio struct {
-	Firstname  string `json:"firstname" binding:"required,alpha"`
-	Middlename string `json:"middlename" binding:"omitempty,alpha"`
-	Surname    string `json:"surname" binding:"required,alpha"`
+	Firstname  string `json:"firstname" binding:"required,alphaunicode"`
+	Middlename string `json:"middlename" binding:"omitempty,alphaunicode"`
+	Surname    string `json:"surname" binding:"required,alphaunicode"`
 }
 
 type CreateUser struct {
@@ -17,12 +17,12 @@ type CreateUser struct {
 	Password string `json:"password" binding:"required,min=8,max=30"`
 }
 
-type CreateUserWithStudent struct {
+type CreateUserAndStudent struct {
 	CreateUser
 	CreateStudent
 }
 
-type CreateUserWithTeacher struct {
-	CreateUser
+type CreateUserAndTeacher struct {
 	CreateTeacher
+	CreateUser
 }

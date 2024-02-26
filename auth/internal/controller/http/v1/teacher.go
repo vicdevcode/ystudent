@@ -17,7 +17,7 @@ type teacherRoute struct {
 	l  *slog.Logger
 }
 
-func NewTeacher(handler *gin.RouterGroup, ut usecase.Teacher, uu usecase.User, l *slog.Logger) {
+func newTeacher(handler *gin.RouterGroup, ut usecase.Teacher, uu usecase.User, l *slog.Logger) {
 	r := &teacherRoute{ut, uu, l}
 	h := handler.Group("/teacher")
 	{
@@ -27,39 +27,33 @@ func NewTeacher(handler *gin.RouterGroup, ut usecase.Teacher, uu usecase.User, l
 
 // SignUp
 
-type signUpTeacherRequest struct {
-	dto.CreateUser
-}
-
 type signUpTeacherResponse struct {
 	*entity.User
-	Teacher signUpGoodTeacher `json:"teacher"`
-	dto.CUD
-}
-
-type signUpGoodTeacher struct {
-	*entity.Teacher
-	UserID interface{} `json:"user_id,omitempty"`
+	Teacher struct {
+		*entity.Teacher
+		UserID interface{} `json:"user_id,omitempty"`
+		dto.CUD
+	} `json:"teacher"`
 	dto.CUD
 }
 
 func (r *teacherRoute) signUp(c *gin.Context) {
-	var body signUpTeacherRequest
+	var body dto.CreateUserAndTeacher
 
 	if err := c.ShouldBindJSON(&body); err != nil {
-		errorJSONResponse(c, http.StatusBadRequest, err.Error())
+		badRequest(c, err.Error())
 		return
 	}
 
 	teacher, err := r.ut.SignUp(c.Request.Context(), body.CreateUser)
 	if err != nil {
-		r.l.Error("sign up", slog.Any(err.Error(), err))
-		errorResponse(c, http.StatusInternalServerError, "sign up")
+		r.l.Error(err.Error())
+		internalServerError(c, err.Error())
 		return
 	}
 	user, err := r.uu.FindOne(c.Request.Context(), teacher.UserID)
 	response := signUpTeacherResponse{User: user}
-	response.Teacher = signUpGoodTeacher{Teacher: teacher}
+	response.Teacher.Teacher = teacher
 
 	c.JSON(http.StatusOK, response)
 }
