@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -42,12 +43,34 @@ func (uc *UserUseCase) FindAll(c context.Context) ([]entity.User, error) {
 	return users, nil
 }
 
-func (uc *UserUseCase) FindOne(c context.Context, id uuid.UUID) (*entity.User, error) {
+func (uc *UserUseCase) FindOne(c context.Context, data entity.User) (*entity.User, error) {
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
-	user, err := uc.repo.FindOne(ctx, id)
+
+	var user *entity.User
+	var err error
+
+	if len(data.Email) != 0 {
+		user, err = uc.repo.FindOneByEmail(ctx, data.Email)
+	} else if uuid.Nil != data.ID {
+		user, err = uc.repo.FindOneByID(ctx, data.ID)
+	} else {
+		// TODO: Придумать текст ошибкы
+		err = errors.New("record not found")
+	}
+
 	if err != nil {
 		return nil, err
 	}
 	return user, nil
+}
+
+func (uc *UserUseCase) UpdateRefreshToken(c context.Context, data dto.UpdateRefreshToken) (*entity.User, error) {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+	user, err := uc.repo.UpdateRefreshToken(ctx, data)
+	if err != nil {
+		return nil, err
+	}
+	return user, err
 }

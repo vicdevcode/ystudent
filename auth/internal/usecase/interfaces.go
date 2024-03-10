@@ -12,30 +12,37 @@ import (
 type (
 	// Admin
 	Admin interface {
-		FindOne(context.Context, string) (*entity.Admin, error)
+		FindOne(context.Context, entity.Admin) (*entity.Admin, error)
+		FindOneByID(context.Context, uuid.UUID) (*entity.Admin, error)
 		UpdateRefreshToken(context.Context, dto.UpdateRefreshToken) (*entity.Admin, error)
 	}
 	AdminRepo interface {
-		FindOne(context.Context, string) (*entity.Admin, error)
+		FindOne(context.Context, entity.Admin) (*entity.Admin, error)
+		FindOneByID(context.Context, uuid.UUID) (*entity.Admin, error)
 		UpdateRefreshToken(context.Context, dto.UpdateRefreshToken) (*entity.Admin, error)
 	}
 	// Jwt
 	Jwt interface {
-		CreateToken(dto.TokenPayload, bool) (string, error)
-		IsAuthorized(string) (bool, error)
-		ExtractIDFromToken(string) (string, error)
+		CreateAccessToken(dto.AccessTokenPayload) (string, error)
+		CreateRefreshToken(dto.RefreshTokenPayload) (string, error)
+		IsTokenValid(string, bool) (bool, error)
+		ExtractFromToken(string, string, bool) (string, error)
+		CreateTokens(dto.AccessTokenPayload, dto.RefreshTokenPayload) (*dto.Tokens, error)
 	}
 	// User
 	User interface {
 		FindAll(context.Context) ([]entity.User, error)
-		FindOne(context.Context, uuid.UUID) (*entity.User, error)
+		FindOne(context.Context, entity.User) (*entity.User, error)
 		SignUp(context.Context, dto.CreateUser) (*entity.User, error)
+		UpdateRefreshToken(context.Context, dto.UpdateRefreshToken) (*entity.User, error)
 	}
 	UserRepo interface {
 		FindAll(context.Context) ([]entity.User, error)
-		FindOne(context.Context, uuid.UUID) (*entity.User, error)
+		FindOneByID(context.Context, uuid.UUID) (*entity.User, error)
+		FindOneByEmail(context.Context, string) (*entity.User, error)
 		Create(context.Context, dto.CreateUser) (*entity.User, error)
 		Delete(context.Context, string) error
+		UpdateRefreshToken(context.Context, dto.UpdateRefreshToken) (*entity.User, error)
 	}
 	// Hash
 	Hash interface {

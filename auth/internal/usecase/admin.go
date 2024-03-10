@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
 )
@@ -20,10 +22,20 @@ func newAdmin(r AdminRepo, t time.Duration) *AdminUseCase {
 	}
 }
 
-func (uc *AdminUseCase) FindOne(c context.Context, login string) (*entity.Admin, error) {
+func (uc *AdminUseCase) FindOne(c context.Context, data entity.Admin) (*entity.Admin, error) {
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
-	admin, err := uc.repo.FindOne(ctx, login)
+	admin, err := uc.repo.FindOne(ctx, data)
+	if err != nil {
+		return nil, err
+	}
+	return admin, nil
+}
+
+func (uc *AdminUseCase) FindOneByID(c context.Context, id uuid.UUID) (*entity.Admin, error) {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+	admin, err := uc.repo.FindOneByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}

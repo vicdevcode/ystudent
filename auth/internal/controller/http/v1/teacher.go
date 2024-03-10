@@ -51,7 +51,9 @@ func (r *teacherRoute) signUp(c *gin.Context) {
 		internalServerError(c, err.Error())
 		return
 	}
-	user, err := r.uu.FindOne(c.Request.Context(), teacher.UserID)
+	user, err := r.uu.FindOne(c.Request.Context(), entity.User{
+		ID: teacher.UserID,
+	})
 	response := signUpTeacherResponse{User: user}
 	response.Teacher.Teacher = teacher
 

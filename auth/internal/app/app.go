@@ -30,6 +30,14 @@ func Run(cfg *config.Config) {
 	}
 	log.Info("Connected to postgres")
 
+	// AutoMigrate
+	if cfg.Env != "local" {
+		if err := migrate(db); err != nil {
+			logger.Fatal(log, "Failed to migrate:", err)
+		}
+		log.Info("Migration completed successfully")
+	}
+
 	// UseCases
 	usecases := usecase.New(cfg, db)
 

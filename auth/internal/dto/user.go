@@ -1,5 +1,7 @@
 package dto
 
+import "github.com/vicdevcode/ystudent/auth/internal/entity"
+
 type User struct {
 	Fio
 	Student Student `json:"student,omitempty"`
@@ -25,4 +27,11 @@ type CreateUserAndStudent struct {
 type CreateUserAndTeacher struct {
 	CreateTeacher
 	CreateUser
+}
+
+type UserResponse struct {
+	*entity.User
+	CUD
+	Password     interface{} `json:"password,omitempty"`
+	RefreshToken interface{} `json:"refresh_token,omitempty"`
 }

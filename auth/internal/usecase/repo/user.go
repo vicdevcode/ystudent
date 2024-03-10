@@ -18,6 +18,8 @@ func NewUser(db *postgres.Postgres) *UserRepo {
 	return &UserRepo{db}
 }
 
+// Create
+
 func (r *UserRepo) Create(ctx context.Context, data dto.CreateUser) (*entity.User, error) {
 	user := &entity.User{
 		Firstname:  data.Firstname,
@@ -32,24 +34,51 @@ func (r *UserRepo) Create(ctx context.Context, data dto.CreateUser) (*entity.Use
 	return user, nil
 }
 
-func (r *UserRepo) FindOne(ctx context.Context, id uuid.UUID) (*entity.User, error) {
-	var user *entity.User
+// Select
 
-	if err := r.WithContext(ctx).First(&user, "id = ?", id).Error; err != nil {
+func (r *UserRepo) FindAll(ctx context.Context) ([]entity.User, error) {
+	var users []entity.User
+	if err := r.WithContext(ctx).Preload("Student").Preload("Teacher").Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
+func (r *UserRepo) FindOneByID(ctx context.Context, uuid uuid.UUID) (*entity.User, error) {
+	var user *entity.User
+	if err := r.WithContext(ctx).Where("id = ?", uuid).Preload("Student").Preload("Teacher").First(&user).Error; err != nil {
 		return nil, err
 	}
 
 	return user, nil
 }
 
-func (r *UserRepo) FindAll(ctx context.Context) ([]entity.User, error) {
-	var users []entity.User
-	if err := r.WithContext(ctx).Find(&users).Error; err != nil {
+func (r *UserRepo) FindOneByEmail(ctx context.Context, email string) (*entity.User, error) {
+	var user *entity.User
+	if err := r.WithContext(ctx).Where("email = ?", email).Preload("Student").Preload("Teacher").First(&user).Error; err != nil {
 		return nil, err
 	}
-	return users, nil
+
+	return user, nil
 }
+
+// Delete
 
 func (r *UserRepo) Delete(ctx context.Context, id string) error {
 	return nil
+}
+
+// Update
+
+func (r *UserRepo) UpdateRefreshToken(ctx context.Context, data dto.UpdateRefreshToken) (*entity.User, error) {
+	user := &entity.User{
+		ID: data.ID,
+	}
+	if err := r.WithContext(ctx).Model(&user).Update("refresh_token", data.RefreshToken).Error; err != nil {
+		return nil, err
+	}
+	if err := r.WithContext(ctx).Where(user).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
 }

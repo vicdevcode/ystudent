@@ -10,9 +10,10 @@ import (
 )
 
 type JwtConfig struct {
-	Secret           string
-	AccessExpiresAt  time.Duration
-	RefreshExpiresAt time.Duration
+	AccessTokenSecret  string
+	RefreshTokenSecret string
+	AccessExpiresAt    time.Duration
+	RefreshExpiresAt   time.Duration
 }
 
 type JwtUseCase struct {
@@ -23,38 +24,66 @@ func newJwt(c JwtConfig) *JwtUseCase {
 	return &JwtUseCase{c}
 }
 
-type CustomClaims struct {
-	dto.TokenPayload
+type CustomAccessTokenClaims struct {
+	dto.AccessTokenPayload
 	jwt.RegisteredClaims
 }
 
-func (j *JwtUseCase) CreateToken(payload dto.TokenPayload, isAccessToken bool) (string, error) {
-	var expiresAt time.Duration
-	if isAccessToken {
-		expiresAt = j.AccessExpiresAt
-	} else {
-		expiresAt = j.RefreshExpiresAt
-	}
-	claims := CustomClaims{
+func (j *JwtUseCase) CreateAccessToken(payload dto.AccessTokenPayload) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, CustomAccessTokenClaims{
 		payload,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiresAt)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.AccessExpiresAt)),
 		},
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	t, err := token.SignedString([]byte(j.Secret))
+	})
+	t, err := token.SignedString([]byte(j.AccessTokenSecret))
 	if err != nil {
 		return "", err
 	}
 	return t, err
 }
 
-func (j *JwtUseCase) IsAuthorized(requestToken string) (bool, error) {
+type CustomRefreshTokenClaims struct {
+	dto.RefreshTokenPayload
+	jwt.RegisteredClaims
+}
+
+func (j *JwtUseCase) CreateRefreshToken(payload dto.RefreshTokenPayload) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, CustomRefreshTokenClaims{
+		payload,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.RefreshExpiresAt)),
+		},
+	})
+	t, err := token.SignedString([]byte(j.RefreshTokenSecret))
+	if err != nil {
+		return "", err
+	}
+	return t, err
+}
+
+func (j *JwtUseCase) CreateTokens(atPayload dto.AccessTokenPayload, rtPayload dto.RefreshTokenPayload) (*dto.Tokens, error) {
+	accessToken, err := j.CreateAccessToken(atPayload)
+	if err != nil {
+		return nil, err
+	}
+	refreshToken, err := j.CreateRefreshToken(rtPayload)
+	if err != nil {
+		return nil, err
+	}
+	return &dto.Tokens{AccessToken: accessToken, RefreshToken: refreshToken}, nil
+}
+
+func (j *JwtUseCase) IsTokenValid(requestToken string, isAccessToken bool) (bool, error) {
+	secret := j.RefreshTokenSecret
+	if isAccessToken {
+		secret = j.AccessTokenSecret
+	}
 	_, err := jwt.Parse(requestToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(j.Secret), nil
+		return []byte(secret), nil
 	})
 	if err != nil {
 		return false, err
@@ -62,12 +91,16 @@ func (j *JwtUseCase) IsAuthorized(requestToken string) (bool, error) {
 	return true, nil
 }
 
-func (j *JwtUseCase) ExtractIDFromToken(requestToken string) (string, error) {
+func (j *JwtUseCase) ExtractFromToken(requestToken string, key string, isAccessToken bool) (string, error) {
+	secret := j.RefreshTokenSecret
+	if isAccessToken {
+		secret = j.AccessTokenSecret
+	}
 	token, err := jwt.Parse(requestToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(j.Secret), nil
+		return []byte(secret), nil
 	})
 	if err != nil {
 		return "", err
@@ -79,5 +112,5 @@ func (j *JwtUseCase) ExtractIDFromToken(requestToken string) (string, error) {
 		return "", fmt.Errorf("Invalid Token")
 	}
 
-	return claims["id"].(string), nil
+	return claims[key].(string), nil
 }
