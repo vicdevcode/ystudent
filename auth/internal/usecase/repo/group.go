@@ -33,7 +33,7 @@ func (r *GroupRepo) Create(ctx context.Context, data dto.CreateGroup) (*entity.G
 
 func (r *GroupRepo) FindAll(ctx context.Context) ([]entity.Group, error) {
 	var groups []entity.Group
-	if err := r.WithContext(ctx).Find(&groups).Error; err != nil {
+	if err := r.WithContext(ctx).Preload("Students").Find(&groups).Error; err != nil {
 		return nil, err
 	}
 	return groups, nil
