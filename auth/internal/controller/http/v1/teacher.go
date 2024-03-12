@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sethvargo/go-password/password"
 
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
@@ -14,30 +15,23 @@ import (
 type teacherRoute struct {
 	ut usecase.Teacher
 	uu usecase.User
+	uh usecase.Hash
 	l  *slog.Logger
 }
 
-func newTeacher(handler *gin.RouterGroup, ut usecase.Teacher, uu usecase.User, l *slog.Logger) {
-	r := &teacherRoute{ut, uu, l}
+func newTeacher(handler *gin.RouterGroup, ut usecase.Teacher, uu usecase.User, uh usecase.Hash, l *slog.Logger) {
+	r := &teacherRoute{ut, uu, uh, l}
 	h := handler.Group("/teacher")
 	{
-		h.POST("/", r.signUp)
+		h.POST("/create-with-user", r.createTeacherWithUser)
 	}
 }
 
 // SignUp
 
-type signUpTeacherResponse struct {
-	*entity.User
-	Teacher struct {
-		*entity.Teacher
-		UserID interface{} `json:"user_id,omitempty"`
-		dto.CUD
-	} `json:"teacher"`
-	dto.CUD
-}
+type createTeacherWithUserResponse dto.UserResponse
 
-func (r *teacherRoute) signUp(c *gin.Context) {
+func (r *teacherRoute) createTeacherWithUser(c *gin.Context) {
 	var body dto.CreateUserAndTeacher
 
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -45,17 +39,41 @@ func (r *teacherRoute) signUp(c *gin.Context) {
 		return
 	}
 
-	teacher, err := r.ut.SignUp(c.Request.Context(), body.CreateUser)
+	password, err := password.Generate(8, 8, 0, false, false)
+	if err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	hashedPassword, err := r.uh.HashPassword(password)
+	if err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	createUser := dto.CreateUser{
+		Fio:      dto.Fio(body.CreateUserWithoutPassword.Fio),
+		Email:    body.CreateUserWithoutPassword.Email,
+		Password: hashedPassword,
+	}
+
+	user, err := r.uu.Create(c.Request.Context(), createUser)
+	if err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	teacher, err := r.ut.Create(c.Request.Context(), dto.CreateTeacher{
+		UserID: user.ID,
+	})
 	if err != nil {
 		r.l.Error(err.Error())
 		internalServerError(c, err.Error())
 		return
 	}
-	user, err := r.uu.FindOne(c.Request.Context(), entity.User{
+	user, err = r.uu.FindOne(c.Request.Context(), entity.User{
 		ID: teacher.UserID,
 	})
-	response := signUpTeacherResponse{User: user}
-	response.Teacher.Teacher = teacher
 
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, createTeacherWithUserResponse{User: user})
 }

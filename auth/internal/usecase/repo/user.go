@@ -44,6 +44,14 @@ func (r *UserRepo) FindAll(ctx context.Context) ([]entity.User, error) {
 	return users, nil
 }
 
+func (r *UserRepo) FindAllByIDs(ctx context.Context, ids []uuid.UUID) ([]entity.User, error) {
+	var users []entity.User
+	if err := r.WithContext(ctx).Preload("Student").Preload("Teacher").Find(&users, ids).Error; err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
 func (r *UserRepo) FindOneByID(ctx context.Context, uuid uuid.UUID) (*entity.User, error) {
 	var user *entity.User
 	if err := r.WithContext(ctx).Where("id = ?", uuid).Preload("Student").Preload("Teacher").First(&user).Error; err != nil {
@@ -56,6 +64,15 @@ func (r *UserRepo) FindOneByID(ctx context.Context, uuid uuid.UUID) (*entity.Use
 func (r *UserRepo) FindOneByEmail(ctx context.Context, email string) (*entity.User, error) {
 	var user *entity.User
 	if err := r.WithContext(ctx).Where("email = ?", email).Preload("Student").Preload("Teacher").First(&user).Error; err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (r *UserRepo) FindOneByRefreshToken(ctx context.Context, refreshToken string) (*entity.User, error) {
+	var user *entity.User
+	if err := r.WithContext(ctx).Where("refresh_token = ?", refreshToken).Preload("Student").Preload("Teacher").First(&user).Error; err != nil {
 		return nil, err
 	}
 

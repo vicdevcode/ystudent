@@ -18,9 +18,17 @@ func NewAdmin(db *postgres.Postgres) *AdminRepo {
 	return &AdminRepo{db}
 }
 
-func (r *AdminRepo) FindOne(ctx context.Context, data entity.Admin) (*entity.Admin, error) {
+func (r *AdminRepo) FindOneByLogin(ctx context.Context, login string) (*entity.Admin, error) {
 	var admin *entity.Admin
-	if err := r.WithContext(ctx).Where(entity.Admin(data)).First(&admin).Error; err != nil {
+	if err := r.WithContext(ctx).Where("login = ?", login).First(&admin).Error; err != nil {
+		return nil, err
+	}
+	return admin, nil
+}
+
+func (r *AdminRepo) FindOneByRefreshToken(ctx context.Context, refreshToken string) (*entity.Admin, error) {
+	var admin *entity.Admin
+	if err := r.WithContext(ctx).Where("refresh_token = ?", refreshToken).First(&admin).Error; err != nil {
 		return nil, err
 	}
 	return admin, nil

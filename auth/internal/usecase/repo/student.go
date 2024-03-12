@@ -3,8 +3,6 @@ package repo
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
 	"github.com/vicdevcode/ystudent/auth/pkg/postgres"
@@ -19,24 +17,22 @@ func NewStudent(db *postgres.Postgres) *StudentRepo {
 }
 
 func (r *StudentRepo) Create(ctx context.Context, data dto.CreateStudent) (*entity.Student, error) {
-	userId, err := uuid.Parse(data.UserID)
-	if err != nil {
-		return nil, err
-	}
-
-	groupId, err := uuid.Parse(data.GroupID)
-	if err != nil {
-		return nil, err
-	}
-
 	student := &entity.Student{
 		Leader:  data.Leader,
-		UserID:  userId,
-		GroupID: groupId,
+		UserID:  data.UserID,
+		GroupID: data.GroupID,
 	}
 
 	if err := r.WithContext(ctx).Create(student).Error; err != nil {
 		return nil, err
 	}
 	return student, nil
+}
+
+func (r *StudentRepo) FindAll(ctx context.Context) ([]entity.Student, error) {
+	var students []entity.Student
+	if err := r.WithContext(ctx).Find(&students).Error; err != nil {
+		return nil, err
+	}
+	return students, nil
 }

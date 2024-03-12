@@ -19,14 +19,19 @@ type CreateUser struct {
 	Password string `json:"password" binding:"required,min=8,max=30"`
 }
 
+type CreateUserWithoutPassword struct {
+	Fio
+	Email string `json:"email" binding:"required,email"`
+}
+
 type CreateUserAndStudent struct {
-	CreateUser
+	CreateUserWithoutPassword
 	CreateStudent
 }
 
 type CreateUserAndTeacher struct {
 	CreateTeacher
-	CreateUser
+	CreateUserWithoutPassword
 }
 
 type UserResponse struct {

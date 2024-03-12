@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,17 +26,21 @@ func newAdmin(r AdminRepo, t time.Duration) *AdminUseCase {
 func (uc *AdminUseCase) FindOne(c context.Context, data entity.Admin) (*entity.Admin, error) {
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
-	admin, err := uc.repo.FindOne(ctx, data)
-	if err != nil {
-		return nil, err
-	}
-	return admin, nil
-}
 
-func (uc *AdminUseCase) FindOneByID(c context.Context, id uuid.UUID) (*entity.Admin, error) {
-	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
-	defer cancel()
-	admin, err := uc.repo.FindOneByID(ctx, id)
+	var admin *entity.Admin
+	var err error
+
+	if len(data.Login) != 0 {
+		admin, err = uc.repo.FindOneByLogin(ctx, data.Login)
+	} else if uuid.Nil != data.ID {
+		admin, err = uc.repo.FindOneByID(ctx, data.ID)
+	} else if len(data.RefreshToken) != 0 {
+		admin, err = uc.repo.FindOneByRefreshToken(ctx, data.RefreshToken)
+	} else {
+		// TODO: Придумать текст ошибкы
+		err = errors.New("record not found")
+	}
+
 	if err != nil {
 		return nil, err
 	}

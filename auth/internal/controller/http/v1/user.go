@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/vicdevcode/ystudent/auth/internal/entity"
+	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/usecase"
 )
 
@@ -25,7 +25,7 @@ func newUser(handler *gin.RouterGroup, u usecase.User, l *slog.Logger) {
 
 // FindAll
 type findAllUserResponse struct {
-	Users []entity.User `json:"users"`
+	Users []dto.UserResponse `json:"users"`
 }
 
 func (r *userRoute) findAll(c *gin.Context) {
@@ -35,5 +35,11 @@ func (r *userRoute) findAll(c *gin.Context) {
 		internalServerError(c, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, findAllUserResponse{users})
+
+	userResponse := make([]dto.UserResponse, len(users), len(users))
+	for i, user := range users {
+		currentUser := user
+		userResponse[i] = dto.UserResponse{User: &currentUser}
+	}
+	c.JSON(http.StatusOK, findAllUserResponse{Users: userResponse})
 }

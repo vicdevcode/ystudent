@@ -23,7 +23,7 @@ func newUser(r UserRepo, t time.Duration) *UserUseCase {
 	}
 }
 
-func (uc *UserUseCase) SignUp(c context.Context, data dto.CreateUser) (*entity.User, error) {
+func (uc *UserUseCase) Create(c context.Context, data dto.CreateUser) (*entity.User, error) {
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
 	user, err := uc.repo.Create(ctx, data)
@@ -54,6 +54,8 @@ func (uc *UserUseCase) FindOne(c context.Context, data entity.User) (*entity.Use
 		user, err = uc.repo.FindOneByEmail(ctx, data.Email)
 	} else if uuid.Nil != data.ID {
 		user, err = uc.repo.FindOneByID(ctx, data.ID)
+	} else if len(data.RefreshToken) != 0 {
+		user, err = uc.repo.FindOneByRefreshToken(ctx, data.RefreshToken)
 	} else {
 		// TODO: Придумать текст ошибкы
 		err = errors.New("record not found")

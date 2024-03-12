@@ -22,8 +22,8 @@ func NewRouter(handler *gin.Engine, l *slog.Logger, uc usecase.UseCases) {
 	protected.Use(adminCheckMiddleware(uc.JwtUseCase, uc.AdminUseCase))
 	{
 		newUser(protected, uc.UserUseCase, l)
-		newStudent(h, uc.StudentUseCase, uc.UserUseCase, l)
-		newTeacher(h, uc.TeacherUseCase, uc.UserUseCase, l)
+		newStudent(protected, uc.StudentUseCase, uc.UserUseCase, uc.HashUseCase, l)
+		newTeacher(protected, uc.TeacherUseCase, uc.UserUseCase, uc.HashUseCase, l)
 		newFaculty(h, uc.FacultyUseCase, l)
 		newGroup(h, uc.GroupUseCase, l)
 		newAuth(h, uc.AdminUseCase, uc.UserUseCase, uc.HashUseCase, uc.JwtUseCase, l)

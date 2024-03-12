@@ -21,8 +21,8 @@ func New(cfg *config.Config, db *postgres.Postgres) UseCases {
 	t := cfg.ContextTimeout
 	return UseCases{
 		UserUseCase:    newUser(repo.NewUser(db), t),
-		StudentUseCase: newStudent(repo.NewUser(db), repo.NewStudent(db), t),
-		TeacherUseCase: newTeacher(repo.NewUser(db), repo.NewTeacher(db), t),
+		StudentUseCase: newStudent(repo.NewStudent(db), repo.NewUser(db), t),
+		TeacherUseCase: newTeacher(repo.NewTeacher(db), t),
 		FacultyUseCase: newFaculty(repo.NewFaculty(db), t),
 		GroupUseCase:   newGroup(repo.NewGroup(db), t),
 		HashUseCase:    newHash(),

@@ -25,7 +25,7 @@ func newAuth(handler *gin.RouterGroup, ua usecase.Admin, uu usecase.User, uh use
 	r := &authRoute{ua, uu, uh, uj, l}
 	h := handler.Group("/auth")
 	{
-		h.GET("/logout")
+		h.GET("/logout", r.logout)
 		h.POST("/", r.signIn)
 		h.POST("/admin", r.signInAdmin)
 		h.GET("/refresh-token", r.refreshTokens)
@@ -66,7 +66,7 @@ func (r *authRoute) signIn(c *gin.Context) {
 		return
 	}
 
-	var role string = "student"
+	var role string
 	if candidate.Student.ID != uuid.Nil {
 		role = "student"
 	} else if candidate.Teacher.ID != uuid.Nil {
@@ -233,7 +233,7 @@ type logoutResponse struct {
 func (r *authRoute) logout(c *gin.Context) {
 	refreshToken, err := c.Cookie("refresh_token")
 	if err != nil {
-		badRequest(c, err.Error())
+		badRequest(c, "cookie not set")
 		return
 	}
 	if refreshToken == "" {
@@ -261,8 +261,6 @@ func (r *authRoute) logout(c *gin.Context) {
 			internalServerError(c, "can not delete refresh token in db")
 			return
 		}
-
-		c.SetCookie("refresh_token", "", -1, "/", "localhost", false, true)
 	} else if role == "student" || role == "teacher" {
 		user, err := r.uu.FindOne(c, entity.User{
 			RefreshToken: refreshToken,
@@ -277,11 +275,10 @@ func (r *authRoute) logout(c *gin.Context) {
 			internalServerError(c, "can not delete refresh token in db")
 			return
 		}
-
-		c.SetCookie("refresh_token", "", -1, "/", "localhost", false, true)
 	} else {
 		internalServerError(c, fmt.Sprintf("this role %s is not exists", role))
 		return
 	}
+	c.SetCookie("refresh_token", "", -1, "/", "localhost", false, true)
 	c.JSON(http.StatusOK, logoutResponse{Message: "successfully logged out"})
 }
