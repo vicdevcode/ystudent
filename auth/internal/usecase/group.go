@@ -2,7 +2,10 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
@@ -38,4 +41,27 @@ func (uc *GroupUseCase) FindAll(c context.Context) ([]entity.Group, error) {
 		return nil, err
 	}
 	return groups, nil
+}
+
+func (uc *GroupUseCase) FindOne(c context.Context, data entity.Group) (*entity.Group, error) {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+
+	if len(data.Name) != 0 {
+		return uc.repo.FindOneByName(ctx, data.Name)
+	} else if uuid.Nil != data.ID {
+		return uc.repo.FindOneByID(ctx, data.ID)
+	}
+
+	return nil, errors.New("record not found")
+}
+
+func (uc *GroupUseCase) UpdateCurator(c context.Context, data dto.UpdateGroupCurator) (*entity.Group, error) {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+	group, err := uc.repo.UpdateCurator(ctx, data)
+	if err != nil {
+		return nil, err
+	}
+	return group, nil
 }

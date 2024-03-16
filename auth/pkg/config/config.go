@@ -15,6 +15,7 @@ import (
 type Config struct {
 	Env            string            `yaml:"env"             env-required:"true"`
 	ContextTimeout time.Duration     `yaml:"context_timeout" env-required:"true"`
+	FillDatabase   *bool             `yaml:"fill_database"`
 	HTTP           httpserver.Config `yaml:"http"            env-required:"true"`
 	DB             postgres.Config   `yaml:"postgres"        env-required:"true"`
 	Admin          Admin             `yaml:"admin"           env-required:"true"`

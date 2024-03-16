@@ -27,3 +27,11 @@ func (r *TeacherRepo) Create(ctx context.Context, data dto.CreateTeacher) (*enti
 
 	return teacher, nil
 }
+
+func (r *TeacherRepo) FindAll(ctx context.Context) ([]entity.Teacher, error) {
+	var teachers []entity.Teacher
+	if err := r.WithContext(ctx).Preload("Groups").Find(&teachers).Error; err != nil {
+		return nil, err
+	}
+	return teachers, nil
+}

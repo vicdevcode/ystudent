@@ -27,24 +27,15 @@ func (uc *AdminUseCase) FindOne(c context.Context, data entity.Admin) (*entity.A
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
 
-	var admin *entity.Admin
-	var err error
-
 	if len(data.Login) != 0 {
-		admin, err = uc.repo.FindOneByLogin(ctx, data.Login)
+		return uc.repo.FindOneByLogin(ctx, data.Login)
 	} else if uuid.Nil != data.ID {
-		admin, err = uc.repo.FindOneByID(ctx, data.ID)
+		return uc.repo.FindOneByID(ctx, data.ID)
 	} else if len(data.RefreshToken) != 0 {
-		admin, err = uc.repo.FindOneByRefreshToken(ctx, data.RefreshToken)
-	} else {
-		// TODO: Придумать текст ошибкы
-		err = errors.New("record not found")
+		return uc.repo.FindOneByRefreshToken(ctx, data.RefreshToken)
 	}
 
-	if err != nil {
-		return nil, err
-	}
-	return admin, nil
+	return nil, errors.New("record not found")
 }
 
 func (uc *AdminUseCase) UpdateRefreshToken(c context.Context, data dto.UpdateRefreshToken) (*entity.Admin, error) {

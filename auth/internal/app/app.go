@@ -41,6 +41,15 @@ func Run(cfg *config.Config) {
 	// UseCases
 	usecases := usecase.New(cfg, db)
 
+	// FillDatabase
+	if cfg.FillDatabase != nil {
+		if err := fillDatabase(usecases); err != nil {
+			log.Error(err.Error())
+			return
+		}
+		log.Info("DB is filled with mock data")
+	}
+
 	// Set Admin
 	var admin *entity.Admin
 	if err := db.Where("login = ?", cfg.Admin.Login).First(&admin).Error; err != nil {

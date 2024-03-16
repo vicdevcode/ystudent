@@ -38,3 +38,29 @@ func (r *GroupRepo) FindAll(ctx context.Context) ([]entity.Group, error) {
 	}
 	return groups, nil
 }
+
+func (r *GroupRepo) FindOneByID(ctx context.Context, id uuid.UUID) (*entity.Group, error) {
+	var group *entity.Group
+	if err := r.WithContext(ctx).Where("id = ?", id).First(&group).Error; err != nil {
+		return nil, err
+	}
+	return group, nil
+}
+
+func (r *GroupRepo) FindOneByName(ctx context.Context, name string) (*entity.Group, error) {
+	var group *entity.Group
+	if err := r.WithContext(ctx).Where("name = ?", name).First(&group).Error; err != nil {
+		return nil, err
+	}
+	return group, nil
+}
+
+func (r *GroupRepo) UpdateCurator(ctx context.Context, data dto.UpdateGroupCurator) (*entity.Group, error) {
+	group := &entity.Group{
+		ID: data.ID,
+	}
+	if err := r.WithContext(ctx).Model(&group).Update("curator_id", data.CuratorID).Error; err != nil {
+		return nil, err
+	}
+	return group, nil
+}

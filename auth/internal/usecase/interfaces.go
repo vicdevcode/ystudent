@@ -50,9 +50,11 @@ type (
 	// Teacher
 	Teacher interface {
 		Create(context.Context, dto.CreateTeacher) (*entity.Teacher, error)
+		FindAll(context.Context) ([]entity.User, error)
 	}
 	TeacherRepo interface {
 		Create(context.Context, dto.CreateTeacher) (*entity.Teacher, error)
+		FindAll(context.Context) ([]entity.Teacher, error)
 	}
 	// Faculty
 	Faculty interface {
@@ -66,11 +68,16 @@ type (
 	// Group
 	Group interface {
 		Create(context.Context, dto.CreateGroup) (*entity.Group, error)
+		FindOne(context.Context, entity.Group) (*entity.Group, error)
 		FindAll(context.Context) ([]entity.Group, error)
+		UpdateCurator(context.Context, dto.UpdateGroupCurator) (*entity.Group, error)
 	}
 	GroupRepo interface {
 		Create(context.Context, dto.CreateGroup) (*entity.Group, error)
+		FindOneByID(context.Context, uuid.UUID) (*entity.Group, error)
+		FindOneByName(context.Context, string) (*entity.Group, error)
 		FindAll(context.Context) ([]entity.Group, error)
+		UpdateCurator(context.Context, dto.UpdateGroupCurator) (*entity.Group, error)
 	}
 	// Hash
 	Hash interface {

@@ -7,5 +7,5 @@ bin/*
 # Config
 config/*
 !config/example.config.yaml
-
+!config/example.prod.yaml
 cmd/test

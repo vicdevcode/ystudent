@@ -24,6 +24,7 @@ func newTeacher(handler *gin.RouterGroup, ut usecase.Teacher, uu usecase.User, u
 	h := handler.Group("/teacher")
 	{
 		h.POST("/create-with-user", r.createTeacherWithUser)
+		h.GET("/", r.findAll)
 	}
 }
 
@@ -76,4 +77,26 @@ func (r *teacherRoute) createTeacherWithUser(c *gin.Context) {
 	})
 
 	c.JSON(http.StatusOK, createTeacherWithUserResponse{User: user})
+}
+
+// FindAll
+
+type findAllTeacherUserResponse struct {
+	Users []dto.UserResponse `json:"users"`
+}
+
+func (r *teacherRoute) findAll(c *gin.Context) {
+	users, err := r.ut.FindAll(c.Request.Context())
+	if err != nil {
+		r.l.Error(err.Error())
+		internalServerError(c, err.Error())
+		return
+	}
+
+	userResponse := make([]dto.UserResponse, len(users), len(users))
+	for i, user := range users {
+		currentUser := user
+		userResponse[i] = dto.UserResponse{User: &currentUser}
+	}
+	c.JSON(http.StatusOK, findAllStudentUserResponse{Users: userResponse})
 }

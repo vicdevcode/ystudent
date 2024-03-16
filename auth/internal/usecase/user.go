@@ -47,24 +47,14 @@ func (uc *UserUseCase) FindOne(c context.Context, data entity.User) (*entity.Use
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
 
-	var user *entity.User
-	var err error
-
 	if len(data.Email) != 0 {
-		user, err = uc.repo.FindOneByEmail(ctx, data.Email)
+		return uc.repo.FindOneByEmail(ctx, data.Email)
 	} else if uuid.Nil != data.ID {
-		user, err = uc.repo.FindOneByID(ctx, data.ID)
+		return uc.repo.FindOneByID(ctx, data.ID)
 	} else if len(data.RefreshToken) != 0 {
-		user, err = uc.repo.FindOneByRefreshToken(ctx, data.RefreshToken)
-	} else {
-		// TODO: Придумать текст ошибкы
-		err = errors.New("record not found")
+		return uc.repo.FindOneByRefreshToken(ctx, data.RefreshToken)
 	}
-
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
+	return nil, errors.New("record not found")
 }
 
 func (uc *UserUseCase) UpdateRefreshToken(c context.Context, data dto.UpdateRefreshToken) (*entity.User, error) {

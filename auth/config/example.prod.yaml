@@ -1,0 +1,23 @@
+env: "prod" # local, dev, prod
+context_timeout: 5s
+http:
+  port: "5000"
+  host: "auth"
+  read_timeout: 5s
+  write_timeout: 5s
+  shutdown_timeout: 5s
+postgres: # может быть любая бд
+  username: "ystudent"
+  password: "password"
+  host: "auth-db"
+  port: "5432"
+  database: "auth"
+jwt:
+  access_token_secret: "access_secret"
+  refresh_token_secret: "refresh_secret"
+  access_expires_at: 15m
+  refresh_expires_at: 720h
+admin:
+  login: "vicdevcode"
+  password: "123123123"
+fill_database: true

@@ -22,7 +22,7 @@ func New(cfg *config.Config, db *postgres.Postgres) UseCases {
 	return UseCases{
 		UserUseCase:    newUser(repo.NewUser(db), t),
 		StudentUseCase: newStudent(repo.NewStudent(db), repo.NewUser(db), t),
-		TeacherUseCase: newTeacher(repo.NewTeacher(db), t),
+		TeacherUseCase: newTeacher(repo.NewTeacher(db), repo.NewUser(db), t),
 		FacultyUseCase: newFaculty(repo.NewFaculty(db), t),
 		GroupUseCase:   newGroup(repo.NewGroup(db), t),
 		HashUseCase:    newHash(),
