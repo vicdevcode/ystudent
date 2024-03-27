@@ -62,7 +62,10 @@ func (j *JwtUseCase) CreateRefreshToken(payload dto.RefreshTokenPayload) (string
 	return t, err
 }
 
-func (j *JwtUseCase) CreateTokens(atPayload dto.AccessTokenPayload, rtPayload dto.RefreshTokenPayload) (*dto.Tokens, error) {
+func (j *JwtUseCase) CreateTokens(
+	atPayload dto.AccessTokenPayload,
+	rtPayload dto.RefreshTokenPayload,
+) (*dto.Tokens, error) {
 	accessToken, err := j.CreateAccessToken(atPayload)
 	if err != nil {
 		return nil, err
@@ -91,7 +94,11 @@ func (j *JwtUseCase) IsTokenValid(requestToken string, isAccessToken bool) (bool
 	return true, nil
 }
 
-func (j *JwtUseCase) ExtractFromToken(requestToken string, key string, isAccessToken bool) (string, error) {
+func (j *JwtUseCase) ExtractFromToken(
+	requestToken string,
+	key string,
+	isAccessToken bool,
+) (string, error) {
 	secret := j.RefreshTokenSecret
 	if isAccessToken {
 		secret = j.AccessTokenSecret

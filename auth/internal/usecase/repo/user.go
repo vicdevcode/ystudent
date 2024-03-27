@@ -70,7 +70,10 @@ func (r *UserRepo) FindOneByEmail(ctx context.Context, email string) (*entity.Us
 	return user, nil
 }
 
-func (r *UserRepo) FindOneByRefreshToken(ctx context.Context, refreshToken string) (*entity.User, error) {
+func (r *UserRepo) FindOneByRefreshToken(
+	ctx context.Context,
+	refreshToken string,
+) (*entity.User, error) {
 	var user *entity.User
 	if err := r.WithContext(ctx).Where("refresh_token = ?", refreshToken).Preload("Student").Preload("Teacher").First(&user).Error; err != nil {
 		return nil, err
@@ -87,7 +90,10 @@ func (r *UserRepo) Delete(ctx context.Context, id string) error {
 
 // Update
 
-func (r *UserRepo) UpdateRefreshToken(ctx context.Context, data dto.UpdateRefreshToken) (*entity.User, error) {
+func (r *UserRepo) UpdateRefreshToken(
+	ctx context.Context,
+	data dto.UpdateRefreshToken,
+) (*entity.User, error) {
 	user := &entity.User{
 		ID: data.ID,
 	}

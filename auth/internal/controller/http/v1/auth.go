@@ -21,7 +21,14 @@ type authRoute struct {
 	l  *slog.Logger
 }
 
-func newAuth(handler *gin.RouterGroup, ua usecase.Admin, uu usecase.User, uh usecase.Hash, uj usecase.Jwt, l *slog.Logger) {
+func newAuth(
+	handler *gin.RouterGroup,
+	ua usecase.Admin,
+	uu usecase.User,
+	uh usecase.Hash,
+	uj usecase.Jwt,
+	l *slog.Logger,
+) {
 	r := &authRoute{ua, uu, uh, uj, l}
 	h := handler.Group("/auth")
 	{
@@ -214,7 +221,10 @@ func (r *authRoute) refreshTokens(c *gin.Context) {
 			Role:  role,
 		})
 
-		_, err = r.ua.UpdateRefreshToken(c, dto.UpdateRefreshToken{ID: admin.ID, RefreshToken: tokens.RefreshToken})
+		_, err = r.ua.UpdateRefreshToken(
+			c,
+			dto.UpdateRefreshToken{ID: admin.ID, RefreshToken: tokens.RefreshToken},
+		)
 
 		c.SetCookie("refresh_token", tokens.RefreshToken, 3600, "/", "localhost", false, true)
 

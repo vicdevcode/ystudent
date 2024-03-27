@@ -8,8 +8,8 @@ import (
 )
 
 type Admin struct {
-	ID           uuid.UUID      `json:"id" gorm:"uuid;default:gen_random_uuid();primarykey"`
-	Login        string         `json:"login" gorm:"unique"`
+	ID           uuid.UUID      `json:"id"                   gorm:"uuid;default:gen_random_uuid();primarykey"`
+	Login        string         `json:"login"                gorm:"unique"`
 	Password     string         `json:"password"`
 	RefreshToken string         `json:"refresh_token"`
 	CreatedAt    time.Time      `json:"created_at"`

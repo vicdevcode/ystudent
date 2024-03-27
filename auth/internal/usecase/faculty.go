@@ -20,7 +20,10 @@ func newFaculty(r FacultyRepo, t time.Duration) *FacultyUseCase {
 	}
 }
 
-func (uc *FacultyUseCase) Create(c context.Context, data dto.CreateFaculty) (*entity.Faculty, error) {
+func (uc *FacultyUseCase) Create(
+	c context.Context,
+	data dto.CreateFaculty,
+) (*entity.Faculty, error) {
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
 	faculty, err := uc.repo.Create(ctx, data)

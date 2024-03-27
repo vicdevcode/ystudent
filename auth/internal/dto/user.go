@@ -8,14 +8,14 @@ type User struct {
 }
 
 type Fio struct {
-	Firstname  string `json:"firstname" binding:"required,alphaunicode"`
+	Firstname  string `json:"firstname"  binding:"required,alphaunicode"`
 	Middlename string `json:"middlename" binding:"omitempty,alphaunicode"`
-	Surname    string `json:"surname" binding:"required,alphaunicode"`
+	Surname    string `json:"surname"    binding:"required,alphaunicode"`
 }
 
 type CreateUser struct {
 	Fio
-	Email    string `json:"email" binding:"required,email"`
+	Email    string `json:"email"    binding:"required,email"`
 	Password string `json:"password" binding:"required,min=8,max=30"`
 }
 

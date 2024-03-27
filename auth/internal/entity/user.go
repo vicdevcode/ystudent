@@ -8,11 +8,11 @@ import (
 )
 
 type User struct {
-	ID           uuid.UUID      `json:"id" gorm:"uuid;default:gen_random_uuid();primarykey"`
+	ID           uuid.UUID      `json:"id"                   gorm:"uuid;default:gen_random_uuid();primarykey"`
 	Firstname    string         `json:"firstname"`
 	Middlename   string         `json:"middlename,omitempty"`
 	Surname      string         `json:"surname"`
-	Email        string         `json:"email" gorm:"unique"`
+	Email        string         `json:"email"                gorm:"unique"`
 	Password     string         `json:"password"`
 	RefreshToken string         `json:"refresh_token"`
 	Student      *Student       `json:"student,omitempty"`

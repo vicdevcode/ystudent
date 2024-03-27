@@ -24,7 +24,10 @@ func newStudent(sr StudentRepo, ur UserRepo, t time.Duration) *StudentUseCase {
 	}
 }
 
-func (uc *StudentUseCase) Create(c context.Context, data dto.CreateStudent) (*entity.Student, error) {
+func (uc *StudentUseCase) Create(
+	c context.Context,
+	data dto.CreateStudent,
+) (*entity.Student, error) {
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
 	student, err := uc.studentRepo.Create(ctx, data)

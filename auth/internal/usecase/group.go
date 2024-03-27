@@ -56,7 +56,10 @@ func (uc *GroupUseCase) FindOne(c context.Context, data entity.Group) (*entity.G
 	return nil, errors.New("record not found")
 }
 
-func (uc *GroupUseCase) UpdateCurator(c context.Context, data dto.UpdateGroupCurator) (*entity.Group, error) {
+func (uc *GroupUseCase) UpdateCurator(
+	c context.Context,
+	data dto.UpdateGroupCurator,
+) (*entity.Group, error) {
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
 	group, err := uc.repo.UpdateCurator(ctx, data)

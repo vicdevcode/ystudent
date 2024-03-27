@@ -57,7 +57,10 @@ func (uc *UserUseCase) FindOne(c context.Context, data entity.User) (*entity.Use
 	return nil, errors.New("record not found")
 }
 
-func (uc *UserUseCase) UpdateRefreshToken(c context.Context, data dto.UpdateRefreshToken) (*entity.User, error) {
+func (uc *UserUseCase) UpdateRefreshToken(
+	c context.Context,
+	data dto.UpdateRefreshToken,
+) (*entity.User, error) {
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
 	user, err := uc.repo.UpdateRefreshToken(ctx, data)

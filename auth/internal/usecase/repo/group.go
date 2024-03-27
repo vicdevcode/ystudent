@@ -55,7 +55,10 @@ func (r *GroupRepo) FindOneByName(ctx context.Context, name string) (*entity.Gro
 	return group, nil
 }
 
-func (r *GroupRepo) UpdateCurator(ctx context.Context, data dto.UpdateGroupCurator) (*entity.Group, error) {
+func (r *GroupRepo) UpdateCurator(
+	ctx context.Context,
+	data dto.UpdateGroupCurator,
+) (*entity.Group, error) {
 	group := &entity.Group{
 		ID: data.ID,
 	}

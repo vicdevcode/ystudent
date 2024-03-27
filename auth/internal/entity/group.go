@@ -8,8 +8,8 @@ import (
 )
 
 type Group struct {
-	ID        uuid.UUID      `json:"id" gorm:"uuid;default:gen_random_uuid();primarykey"`
-	Name      string         `json:"name" gorm:"unique"`
+	ID        uuid.UUID      `json:"id"                   gorm:"uuid;default:gen_random_uuid();primarykey"`
+	Name      string         `json:"name"                 gorm:"unique"`
 	FacultyID *uuid.UUID     `json:"faculty_id,omitempty" gorm:"uuid"`
 	CuratorID *uuid.UUID     `json:"curator_id,omitempty" gorm:"uuid"`
 	Students  []Student      `json:"students"`

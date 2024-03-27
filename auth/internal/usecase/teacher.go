@@ -24,7 +24,10 @@ func newTeacher(tr TeacherRepo, ur UserRepo, t time.Duration) *TeacherUseCase {
 	}
 }
 
-func (uc *TeacherUseCase) Create(c context.Context, data dto.CreateTeacher) (*entity.Teacher, error) {
+func (uc *TeacherUseCase) Create(
+	c context.Context,
+	data dto.CreateTeacher,
+) (*entity.Teacher, error) {
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
 	teacher, err := uc.teacherRepo.Create(ctx, data)

@@ -19,7 +19,13 @@ type studentRoute struct {
 	l  *slog.Logger
 }
 
-func newStudent(handler *gin.RouterGroup, us usecase.Student, uu usecase.User, uh usecase.Hash, l *slog.Logger) {
+func newStudent(
+	handler *gin.RouterGroup,
+	us usecase.Student,
+	uu usecase.User,
+	uh usecase.Hash,
+	l *slog.Logger,
+) {
 	r := &studentRoute{us, uu, uh, l}
 	h := handler.Group("/student")
 	{
