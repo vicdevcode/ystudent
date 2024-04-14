@@ -1,10 +1,12 @@
 package v1
 
 import (
+	"encoding/json"
 	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rabbitmq/amqp091-go"
 
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
@@ -12,12 +14,13 @@ import (
 )
 
 type groupRoute struct {
-	u usecase.Group
-	l *slog.Logger
+	u   usecase.Group
+	l   *slog.Logger
+	rmq *RabbitMQ
 }
 
-func newGroup(handler *gin.RouterGroup, u usecase.Group, l *slog.Logger) {
-	r := &groupRoute{u, l}
+func newGroup(handler *gin.RouterGroup, u usecase.Group, rmq *RabbitMQ, l *slog.Logger) {
+	r := &groupRoute{u, l, rmq}
 	h := handler.Group("/group")
 	{
 		h.POST("/", r.create)
@@ -60,5 +63,22 @@ func (r *groupRoute) findAll(c *gin.Context) {
 		return
 	}
 
+	response, err := json.Marshal(groups)
+	if err != nil {
+		return
+	}
+
 	c.JSON(http.StatusOK, findAllGroupResponse{Groups: groups})
+
+	r.rmq.ch.PublishWithContext(
+		c.Request.Context(),
+		r.rmq.exchange,
+		"lol.groups",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        response,
+		},
+	)
 }

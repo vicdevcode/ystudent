@@ -1,10 +1,12 @@
 package v1
 
 import (
+	"encoding/json"
 	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rabbitmq/amqp091-go"
 
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
@@ -12,12 +14,13 @@ import (
 )
 
 type facultyRoute struct {
-	u usecase.Faculty
-	l *slog.Logger
+	u   usecase.Faculty
+	l   *slog.Logger
+	rmq *RabbitMQ
 }
 
-func newFaculty(handler *gin.RouterGroup, u usecase.Faculty, l *slog.Logger) {
-	r := &facultyRoute{u, l}
+func newFaculty(handler *gin.RouterGroup, u usecase.Faculty, rmq *RabbitMQ, l *slog.Logger) {
+	r := &facultyRoute{u, l, rmq}
 	h := handler.Group("/faculty")
 	{
 		h.POST("/", r.create)
@@ -60,5 +63,22 @@ func (r *facultyRoute) findAll(c *gin.Context) {
 		return
 	}
 
+	response, err := json.Marshal(faculties)
+	if err != nil {
+		return
+	}
+
 	c.JSON(http.StatusOK, findAllFacultyResponse{Faculties: faculties})
+
+	r.rmq.ch.PublishWithContext(
+		c.Request.Context(),
+		r.rmq.exchange,
+		"lol.faculties",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        response,
+		},
+	)
 }
