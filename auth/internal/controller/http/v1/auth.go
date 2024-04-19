@@ -21,7 +21,8 @@ type authRoute struct {
 }
 
 func newAuth(
-	handler *gin.RouterGroup,
+	public *gin.RouterGroup,
+	private *gin.RouterGroup,
 	ua usecase.Admin,
 	uu usecase.User,
 	uh usecase.Hash,
@@ -29,13 +30,17 @@ func newAuth(
 	l *slog.Logger,
 ) {
 	r := &authRoute{ua, uu, uh, uj, l}
-	h := handler.Group("/auth")
 	{
-		h.GET("/logout", r.logout)
-		h.POST("/", r.signIn)
-		h.POST("/admin", r.signInAdmin)
-		h.GET("/refresh-token", r.refreshTokens)
+		public.GET("/auth/logout", r.logout)
+		public.POST("/auth/", r.signIn)
+		public.POST("/auth/admin", r.signInAdmin)
+		public.GET("/auth/refresh-token", r.refreshTokens)
+		private.GET("/auth/check", r.check)
 	}
+}
+
+func (r *authRoute) check(c *gin.Context) {
+	c.JSON(200, gin.H{"message": "successfully logged in"})
 }
 
 // sign in user

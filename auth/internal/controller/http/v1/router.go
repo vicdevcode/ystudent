@@ -59,6 +59,6 @@ func NewRouter(
 		newTeacher(protected, uc.TeacherUseCase, uc.UserUseCase, uc.HashUseCase, rmq, l)
 		newFaculty(public, protected, uc.FacultyUseCase, rmq, l)
 		newGroup(public, protected, uc.GroupUseCase, rmq, l)
-		newAuth(public, uc.AdminUseCase, uc.UserUseCase, uc.HashUseCase, uc.JwtUseCase, l)
+		newAuth(public, private, uc.AdminUseCase, uc.UserUseCase, uc.HashUseCase, uc.JwtUseCase, l)
 	}
 }
