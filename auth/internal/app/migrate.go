@@ -2,10 +2,10 @@ package app
 
 import (
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
-	"github.com/vicdevcode/ystudent/auth/pkg/postgres"
+	"github.com/vicdevcode/ystudent/auth/pkg/sqlite"
 )
 
-func migrate(db *postgres.Postgres) error {
+func migrate(db *sqlite.SQLite) error {
 	if err := db.AutoMigrate(
 		&entity.Admin{},
 		&entity.User{},

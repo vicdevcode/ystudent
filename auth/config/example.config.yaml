@@ -21,3 +21,13 @@ admin:
   login: "vicdevcode"
   password: "123123123"
 fill_database: false
+rabbitmq:
+  username: "ystudent"
+  password: "123123"
+  host: "localhost"
+  port: "5672"
+  exchange_name: "ystudent"
+  queue_name: "auth"
+  topics: ["chat.*", "chat.*.*"]
+sqlite:
+  path: "auth.db"

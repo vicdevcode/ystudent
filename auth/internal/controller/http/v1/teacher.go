@@ -1,10 +1,12 @@
 package v1
 
 import (
+	"encoding/json"
 	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rabbitmq/amqp091-go"
 	"github.com/sethvargo/go-password/password"
 
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
@@ -13,10 +15,11 @@ import (
 )
 
 type teacherRoute struct {
-	ut usecase.Teacher
-	uu usecase.User
-	uh usecase.Hash
-	l  *slog.Logger
+	ut  usecase.Teacher
+	uu  usecase.User
+	uh  usecase.Hash
+	rmq *RabbitMQ
+	l   *slog.Logger
 }
 
 func newTeacher(
@@ -24,9 +27,10 @@ func newTeacher(
 	ut usecase.Teacher,
 	uu usecase.User,
 	uh usecase.Hash,
+	rmq *RabbitMQ,
 	l *slog.Logger,
 ) {
-	r := &teacherRoute{ut, uu, uh, l}
+	r := &teacherRoute{ut, uu, uh, rmq, l}
 	h := handler.Group("/teacher")
 	{
 		h.POST("/create-with-user", r.createTeacherWithUser)
@@ -83,6 +87,23 @@ func (r *teacherRoute) createTeacherWithUser(c *gin.Context) {
 	})
 
 	c.JSON(http.StatusOK, createTeacherWithUserResponse{User: user})
+
+	response, err := json.Marshal(user)
+	if err != nil {
+		return
+	}
+
+	r.rmq.ch.PublishWithContext(
+		c.Request.Context(),
+		r.rmq.exchange,
+		"auth.teacher.created",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        response,
+		},
+	)
 }
 
 // FindAll

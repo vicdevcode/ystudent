@@ -5,8 +5,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
 )
@@ -29,7 +27,7 @@ func (uc *AdminUseCase) FindOne(c context.Context, data entity.Admin) (*entity.A
 
 	if len(data.Login) != 0 {
 		return uc.repo.FindOneByLogin(ctx, data.Login)
-	} else if uuid.Nil != data.ID {
+	} else if data.ID != 0 {
 		return uc.repo.FindOneByID(ctx, data.ID)
 	} else if len(data.RefreshToken) != 0 {
 		return uc.repo.FindOneByRefreshToken(ctx, data.RefreshToken)

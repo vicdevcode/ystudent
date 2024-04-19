@@ -69,6 +69,9 @@ func (c *Consumer) Start(uc usecase.UseCases, l *slog.Logger) {
 				l.Info(student.Firstname)
 				l.Debug(d.RoutingKey)
 				break
+			default:
+				l.Info(d.RoutingKey)
+				break
 			}
 			d.Ack(false)
 		}

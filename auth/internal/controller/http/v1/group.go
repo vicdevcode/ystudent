@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rabbitmq/amqp091-go"
@@ -19,12 +20,18 @@ type groupRoute struct {
 	rmq *RabbitMQ
 }
 
-func newGroup(handler *gin.RouterGroup, u usecase.Group, rmq *RabbitMQ, l *slog.Logger) {
+func newGroup(
+	public *gin.RouterGroup,
+	protected *gin.RouterGroup,
+	u usecase.Group,
+	rmq *RabbitMQ,
+	l *slog.Logger,
+) {
 	r := &groupRoute{u, l, rmq}
-	h := handler.Group("/group")
 	{
-		h.POST("/", r.create)
-		h.GET("/", r.findAll)
+		protected.POST("/group/", r.create)
+		public.GET("/group/", r.findAll)
+		protected.PUT("/group/:id", r.updateCurator)
 	}
 }
 
@@ -48,7 +55,24 @@ func (r *groupRoute) create(c *gin.Context) {
 		return
 	}
 
+	response, err := json.Marshal(group)
+	if err != nil {
+		return
+	}
+
 	c.JSON(http.StatusOK, createGroupResponse{Group: group})
+
+	r.rmq.ch.PublishWithContext(
+		c.Request.Context(),
+		r.rmq.exchange,
+		"auth.group.created",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        response,
+		},
+	)
 }
 
 type findAllGroupResponse struct {
@@ -63,17 +87,48 @@ func (r *groupRoute) findAll(c *gin.Context) {
 		return
 	}
 
-	response, err := json.Marshal(groups)
+	c.JSON(http.StatusOK, findAllGroupResponse{Groups: groups})
+}
+
+type updateCurator struct {
+	TeacherId uint `json:"teacher_id"`
+}
+
+func (r *groupRoute) updateCurator(c *gin.Context) {
+	var body updateCurator
+
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+
+	group, err := r.u.UpdateCurator(c.Request.Context(), dto.UpdateGroupCurator{
+		ID:        uint(id),
+		CuratorID: body.TeacherId,
+	})
+	if err != nil {
+		r.l.Error(err.Error())
+		internalServerError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, createGroupResponse{Group: group})
+
+	response, err := json.Marshal(group)
 	if err != nil {
 		return
 	}
 
-	c.JSON(http.StatusOK, findAllGroupResponse{Groups: groups})
-
 	r.rmq.ch.PublishWithContext(
 		c.Request.Context(),
 		r.rmq.exchange,
-		"lol.groups",
+		"auth.group.curator_updated",
 		false,
 		false,
 		amqp091.Publishing{

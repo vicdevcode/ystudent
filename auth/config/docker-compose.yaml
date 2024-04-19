@@ -5,6 +5,6 @@ services:
     image: postgres
     restart: always
     env_file:
-      - ../postgres.env
+      - ../postgres.local.env
     ports:
       - "5432:5432"

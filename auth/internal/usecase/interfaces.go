@@ -3,8 +3,6 @@ package usecase
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
 )
@@ -18,7 +16,7 @@ type (
 	AdminRepo interface {
 		FindOneByRefreshToken(context.Context, string) (*entity.Admin, error)
 		FindOneByLogin(context.Context, string) (*entity.Admin, error)
-		FindOneByID(context.Context, uuid.UUID) (*entity.Admin, error)
+		FindOneByID(context.Context, uint) (*entity.Admin, error)
 		UpdateRefreshToken(context.Context, dto.UpdateRefreshToken) (*entity.Admin, error)
 	}
 	// User
@@ -30,8 +28,8 @@ type (
 	}
 	UserRepo interface {
 		FindAll(context.Context) ([]entity.User, error)
-		FindAllByIDs(context.Context, []uuid.UUID) ([]entity.User, error)
-		FindOneByID(context.Context, uuid.UUID) (*entity.User, error)
+		FindAllByIDs(context.Context, []uint) ([]entity.User, error)
+		FindOneByID(context.Context, uint) (*entity.User, error)
 		FindOneByEmail(context.Context, string) (*entity.User, error)
 		FindOneByRefreshToken(context.Context, string) (*entity.User, error)
 		Create(context.Context, dto.CreateUser) (*entity.User, error)
@@ -74,7 +72,7 @@ type (
 	}
 	GroupRepo interface {
 		Create(context.Context, dto.CreateGroup) (*entity.Group, error)
-		FindOneByID(context.Context, uuid.UUID) (*entity.Group, error)
+		FindOneByID(context.Context, uint) (*entity.Group, error)
 		FindOneByName(context.Context, string) (*entity.Group, error)
 		FindAll(context.Context) ([]entity.Group, error)
 		UpdateCurator(context.Context, dto.UpdateGroupCurator) (*entity.Group, error)

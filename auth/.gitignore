@@ -11,3 +11,6 @@ config/*
 # db for development
 !config/docker-compose.yaml
 cmd/test
+
+# SQLITE
+*.db

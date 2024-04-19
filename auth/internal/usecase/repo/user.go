@@ -3,18 +3,16 @@ package repo
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
-	"github.com/vicdevcode/ystudent/auth/pkg/postgres"
+	"github.com/vicdevcode/ystudent/auth/pkg/sqlite"
 )
 
 type UserRepo struct {
-	*postgres.Postgres
+	*sqlite.SQLite
 }
 
-func NewUser(db *postgres.Postgres) *UserRepo {
+func NewUser(db *sqlite.SQLite) *UserRepo {
 	return &UserRepo{db}
 }
 
@@ -44,7 +42,7 @@ func (r *UserRepo) FindAll(ctx context.Context) ([]entity.User, error) {
 	return users, nil
 }
 
-func (r *UserRepo) FindAllByIDs(ctx context.Context, ids []uuid.UUID) ([]entity.User, error) {
+func (r *UserRepo) FindAllByIDs(ctx context.Context, ids []uint) ([]entity.User, error) {
 	var users []entity.User
 	if err := r.WithContext(ctx).Preload("Student").Preload("Teacher").Find(&users, ids).Error; err != nil {
 		return nil, err
@@ -52,9 +50,9 @@ func (r *UserRepo) FindAllByIDs(ctx context.Context, ids []uuid.UUID) ([]entity.
 	return users, nil
 }
 
-func (r *UserRepo) FindOneByID(ctx context.Context, uuid uuid.UUID) (*entity.User, error) {
+func (r *UserRepo) FindOneByID(ctx context.Context, id uint) (*entity.User, error) {
 	var user *entity.User
-	if err := r.WithContext(ctx).Where("id = ?", uuid).Preload("Student").Preload("Teacher").First(&user).Error; err != nil {
+	if err := r.WithContext(ctx).Where("id = ?", id).Preload("Student").Preload("Teacher").First(&user).Error; err != nil {
 		return nil, err
 	}
 

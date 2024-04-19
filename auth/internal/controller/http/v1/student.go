@@ -1,11 +1,12 @@
 package v1
 
 import (
+	"encoding/json"
 	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sethvargo/go-password/password"
+	"github.com/rabbitmq/amqp091-go"
 
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
@@ -13,10 +14,11 @@ import (
 )
 
 type studentRoute struct {
-	us usecase.Student
-	uu usecase.User
-	uh usecase.Hash
-	l  *slog.Logger
+	us  usecase.Student
+	uu  usecase.User
+	uh  usecase.Hash
+	rmq *RabbitMQ
+	l   *slog.Logger
 }
 
 func newStudent(
@@ -24,9 +26,10 @@ func newStudent(
 	us usecase.Student,
 	uu usecase.User,
 	uh usecase.Hash,
+	rmq *RabbitMQ,
 	l *slog.Logger,
 ) {
-	r := &studentRoute{us, uu, uh, l}
+	r := &studentRoute{us, uu, uh, rmq, l}
 	h := handler.Group("/student")
 	{
 		h.POST("/create-with-user", r.createStudentWithUser)
@@ -36,10 +39,7 @@ func newStudent(
 
 // CreateWithUser
 
-type createStudentWithUserResponse struct {
-	dto.UserResponse
-	Password string `json:"password"`
-}
+type createStudentWithUserResponse dto.UserResponse
 
 func (r *studentRoute) createStudentWithUser(c *gin.Context) {
 	var body dto.CreateUserAndStudent
@@ -49,13 +49,13 @@ func (r *studentRoute) createStudentWithUser(c *gin.Context) {
 		return
 	}
 
-	password, err := password.Generate(8, 8, 0, false, false)
-	if err != nil {
-		internalServerError(c, err.Error())
-		return
-	}
+	// password, err := password.Generate(8, 8, 0, false, false)
+	// if err != nil {
+	// 	internalServerError(c, err.Error())
+	// 	return
+	// }
 
-	hashedPassword, err := r.uh.HashPassword(password)
+	hashedPassword, err := r.uh.HashPassword("123123123")
 	if err != nil {
 		internalServerError(c, err.Error())
 		return
@@ -86,10 +86,24 @@ func (r *studentRoute) createStudentWithUser(c *gin.Context) {
 
 	user, err = r.uu.FindOne(c.Request.Context(), entity.User{ID: user.ID})
 
-	c.JSON(http.StatusOK, createStudentWithUserResponse{
-		UserResponse: dto.UserResponse{User: user},
-		Password:     password,
-	})
+	c.JSON(http.StatusOK, createStudentWithUserResponse{User: user})
+
+	response, err := json.Marshal(user)
+	if err != nil {
+		return
+	}
+
+	r.rmq.ch.PublishWithContext(
+		c.Request.Context(),
+		r.rmq.exchange,
+		"auth.student.created",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        response,
+		},
+	)
 }
 
 // Create
@@ -118,6 +132,23 @@ func (r *studentRoute) createStudent(c *gin.Context) {
 	c.JSON(http.StatusOK, createStudentResponse{
 		Student: student,
 	})
+
+	response, err := json.Marshal(student)
+	if err != nil {
+		return
+	}
+
+	r.rmq.ch.PublishWithContext(
+		c.Request.Context(),
+		r.rmq.exchange,
+		"auth.student.created",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        response,
+		},
+	)
 }
 
 // FindAll

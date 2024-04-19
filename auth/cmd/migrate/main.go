@@ -5,12 +5,12 @@ import (
 
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
 	"github.com/vicdevcode/ystudent/auth/pkg/config"
-	"github.com/vicdevcode/ystudent/auth/pkg/postgres"
+	"github.com/vicdevcode/ystudent/auth/pkg/sqlite"
 )
 
 func main() {
 	cfg := config.MustLoad()
-	db, err := postgres.New((*postgres.Config)(&cfg.DB))
+	db, err := sqlite.New(&cfg.SQLite)
 	if err != nil {
 		log.Fatal(err)
 	}

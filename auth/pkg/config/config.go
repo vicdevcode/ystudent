@@ -11,6 +11,7 @@ import (
 	"github.com/vicdevcode/ystudent/auth/pkg/httpserver"
 	"github.com/vicdevcode/ystudent/auth/pkg/postgres"
 	"github.com/vicdevcode/ystudent/auth/pkg/rabbitmq"
+	"github.com/vicdevcode/ystudent/auth/pkg/sqlite"
 )
 
 type Config struct {
@@ -18,10 +19,11 @@ type Config struct {
 	ContextTimeout time.Duration     `yaml:"context_timeout" env-required:"true"`
 	FillDatabase   *bool             `yaml:"fill_database"`
 	HTTP           httpserver.Config `yaml:"http"            env-required:"true"`
-	DB             postgres.Config   `yaml:"postgres"        env-required:"true"`
+	DB             postgres.Config   `yaml:"postgres"`
 	Admin          Admin             `yaml:"admin"           env-required:"true"`
 	JWT            JWT               `yaml:"jwt"             env-required:"true"`
 	RabbitMQ       rabbitmq.Config   `yaml:"rabbitmq"        env-required:"true"`
+	SQLite         sqlite.Config     `yaml:"sqlite"`
 }
 
 type Admin struct {

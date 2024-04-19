@@ -1,9 +1,5 @@
 package dto
 
-import (
-	"github.com/google/uuid"
-)
-
 type TokenPayload struct {
 	ID    string `json:"id,omitempty"`
 	Email string `json:"email,omitempty"`
@@ -23,8 +19,8 @@ type RefreshTokenPayload struct {
 }
 
 type UpdateRefreshToken struct {
-	ID           uuid.UUID `json:"id"`
-	RefreshToken string    `json:"refresh_token"`
+	ID           uint   `json:"id"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 type Tokens struct {

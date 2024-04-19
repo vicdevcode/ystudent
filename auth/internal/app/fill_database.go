@@ -31,7 +31,7 @@ func fillDatabase(usecases usecase.UseCases) error {
 	}
 
 	groupIvt202, err := usecases.GroupUseCase.Create(ctx, dto.CreateGroup{
-		FacultyID: facultyIMI.ID.String(),
+		FacultyID: facultyIMI.ID,
 		Name:      "ИВТ-20-2",
 	})
 	if err != nil {
@@ -39,7 +39,7 @@ func fillDatabase(usecases usecase.UseCases) error {
 	}
 
 	groupIvt201, err := usecases.GroupUseCase.Create(ctx, dto.CreateGroup{
-		FacultyID: facultyIMI.ID.String(),
+		FacultyID: facultyIMI.ID,
 		Name:      "ИВТ-20-1",
 	})
 	if err != nil {

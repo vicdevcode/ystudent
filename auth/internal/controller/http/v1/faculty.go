@@ -19,12 +19,15 @@ type facultyRoute struct {
 	rmq *RabbitMQ
 }
 
-func newFaculty(handler *gin.RouterGroup, u usecase.Faculty, rmq *RabbitMQ, l *slog.Logger) {
+func newFaculty(
+	public *gin.RouterGroup,
+	protected *gin.RouterGroup,
+	u usecase.Faculty, rmq *RabbitMQ, l *slog.Logger,
+) {
 	r := &facultyRoute{u, l, rmq}
-	h := handler.Group("/faculty")
 	{
-		h.POST("/", r.create)
-		h.GET("/", r.findAll)
+		protected.POST("/faculty/", r.create)
+		public.GET("/faculty/", r.findAll)
 	}
 }
 
@@ -48,7 +51,24 @@ func (r *facultyRoute) create(c *gin.Context) {
 		return
 	}
 
+	response, err := json.Marshal(faculty)
+	if err != nil {
+		return
+	}
+
 	c.JSON(http.StatusOK, createFacultyResponse{Faculty: faculty})
+
+	r.rmq.ch.PublishWithContext(
+		c.Request.Context(),
+		r.rmq.exchange,
+		"auth.faculty.created",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        response,
+		},
+	)
 }
 
 type findAllFacultyResponse struct {
@@ -63,22 +83,5 @@ func (r *facultyRoute) findAll(c *gin.Context) {
 		return
 	}
 
-	response, err := json.Marshal(faculties)
-	if err != nil {
-		return
-	}
-
 	c.JSON(http.StatusOK, findAllFacultyResponse{Faculties: faculties})
-
-	r.rmq.ch.PublishWithContext(
-		c.Request.Context(),
-		r.rmq.exchange,
-		"lol.faculties",
-		false,
-		false,
-		amqp091.Publishing{
-			ContentType: "application/json",
-			Body:        response,
-		},
-	)
 }

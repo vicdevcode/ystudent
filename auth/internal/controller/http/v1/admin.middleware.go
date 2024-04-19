@@ -2,10 +2,10 @@ package v1
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
 	"github.com/vicdevcode/ystudent/auth/internal/usecase"
@@ -34,10 +34,15 @@ func adminCheckMiddleware(uj usecase.Jwt, ua usecase.Admin) gin.HandlerFunc {
 			unauthorized(c)
 			return
 		}
+		uid64, err := strconv.ParseUint(id, 10, 32)
+		if err != nil {
+			unauthorized(c)
+			return
+		}
 		login, err := uj.ExtractFromToken(token, "email", true)
 
 		admin, err := ua.FindOne(c, entity.Admin{
-			ID: uuid.MustParse(id),
+			ID: uint(uid64),
 		})
 		if err != nil {
 			unauthorized(c)

@@ -7,13 +7,13 @@ import (
 )
 
 type Config struct {
-	Username     string `yaml:"username"`
-	Password     string `yaml:"password"`
-	Host         string `yaml:"host"`
-	Port         string `yaml:"port"`
-	ExchangeName string `yaml:"exchange_name"`
-	QueueName    string `yaml:"queue_name"`
-	Topic        string `yaml:"topic"`
+	Username     string   `yaml:"username"`
+	Password     string   `yaml:"password"`
+	Host         string   `yaml:"host"`
+	Port         string   `yaml:"port"`
+	ExchangeName string   `yaml:"exchange_name"`
+	QueueName    string   `yaml:"queue_name"`
+	Topics       []string `yaml:"topics"`
 }
 
 func New(cfg *Config) (*amqp.Connection, *amqp.Channel, amqp.Queue, <-chan amqp.Delivery) {
@@ -54,9 +54,11 @@ func New(cfg *Config) (*amqp.Connection, *amqp.Channel, amqp.Queue, <-chan amqp.
 		panic(err)
 	}
 
-	err = ch.QueueBind(queue.Name, cfg.Topic, cfg.ExchangeName, false, nil)
-	if err != nil {
-		panic(err)
+	for _, topic := range cfg.Topics {
+		err = ch.QueueBind(queue.Name, topic, cfg.ExchangeName, false, nil)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	delivery, err := ch.Consume(

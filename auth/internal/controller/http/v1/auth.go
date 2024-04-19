@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
@@ -74,9 +73,9 @@ func (r *authRoute) signIn(c *gin.Context) {
 	}
 
 	var role string
-	if candidate.Student.ID != uuid.Nil {
+	if candidate.Student.ID != 0 {
 		role = "student"
-	} else if candidate.Teacher.ID != uuid.Nil {
+	} else if candidate.Teacher.ID != 0 {
 		role = "teacher"
 	} else {
 		internalServerError(c, "internal server error")

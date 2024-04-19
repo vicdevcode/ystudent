@@ -28,7 +28,7 @@ func NewRouter(
 	handler.Use(gin.Recovery())
 	handler.Use(cors.Default())
 
-	h := handler.Group("/api/v1")
+	public := handler.Group("/api/v1")
 	private := handler.Group("/api/v1")
 	protected := handler.Group("/api/v1")
 	private.Use(jwtCheckMiddleware(uc.JwtUseCase))
@@ -40,18 +40,25 @@ func NewRouter(
 		return
 	}
 
-	ch.PublishWithContext(context.Background(), exchange, "lol.*", false, false, amqp.Publishing{
-		ContentType: "application/json",
-		Body:        message,
-	})
 	rmq := newRabbitMQ(ch, exchange)
+	rmq.ch.PublishWithContext(
+		context.Background(),
+		exchange,
+		"auth.start",
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        message,
+		},
+	)
 
 	{
 		newUser(protected, uc.UserUseCase, l)
-		newStudent(protected, uc.StudentUseCase, uc.UserUseCase, uc.HashUseCase, l)
-		newTeacher(protected, uc.TeacherUseCase, uc.UserUseCase, uc.HashUseCase, l)
-		newFaculty(h, uc.FacultyUseCase, rmq, l)
-		newGroup(h, uc.GroupUseCase, rmq, l)
-		newAuth(h, uc.AdminUseCase, uc.UserUseCase, uc.HashUseCase, uc.JwtUseCase, l)
+		newStudent(protected, uc.StudentUseCase, uc.UserUseCase, uc.HashUseCase, rmq, l)
+		newTeacher(protected, uc.TeacherUseCase, uc.UserUseCase, uc.HashUseCase, rmq, l)
+		newFaculty(public, protected, uc.FacultyUseCase, rmq, l)
+		newGroup(public, protected, uc.GroupUseCase, rmq, l)
+		newAuth(public, uc.AdminUseCase, uc.UserUseCase, uc.HashUseCase, uc.JwtUseCase, l)
 	}
 }

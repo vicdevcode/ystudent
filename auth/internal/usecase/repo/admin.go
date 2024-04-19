@@ -3,18 +3,16 @@ package repo
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
-	"github.com/vicdevcode/ystudent/auth/pkg/postgres"
+	"github.com/vicdevcode/ystudent/auth/pkg/sqlite"
 )
 
 type AdminRepo struct {
-	*postgres.Postgres
+	*sqlite.SQLite
 }
 
-func NewAdmin(db *postgres.Postgres) *AdminRepo {
+func NewAdmin(db *sqlite.SQLite) *AdminRepo {
 	return &AdminRepo{db}
 }
 
@@ -37,7 +35,7 @@ func (r *AdminRepo) FindOneByRefreshToken(
 	return admin, nil
 }
 
-func (r *AdminRepo) FindOneByID(ctx context.Context, id uuid.UUID) (*entity.Admin, error) {
+func (r *AdminRepo) FindOneByID(ctx context.Context, id uint) (*entity.Admin, error) {
 	var admin *entity.Admin
 	if err := r.WithContext(ctx).Where("id = ?", id).First(&admin).Error; err != nil {
 		return nil, err
