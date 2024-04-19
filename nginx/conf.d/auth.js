@@ -1,0 +1,11 @@
+function introspectAccessToken(r) {
+  r.subrequest("/_auth_send_request", function(reply) {
+    if (reply.status === 200) {
+      var response = JSON.parse(reply.responseBody);
+      if (response.active === true) r.return(204);
+      else r.return(403);
+    } else r.return(401);
+  });
+}
+
+export default { introspectAccessToken };
