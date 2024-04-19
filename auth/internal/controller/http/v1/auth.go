@@ -40,7 +40,7 @@ func newAuth(
 }
 
 func (r *authRoute) check(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "successfully logged in"})
+	c.JSON(200, gin.H{"active": true})
 }
 
 // sign in user
