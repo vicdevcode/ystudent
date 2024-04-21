@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title></title>
+    <link href="css/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+      const socket = io("http://chat.y-student.ru/", {
+        auth: {
+          access_token:
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJlbWFpbCI6InZpY2RldmNvZGUiLCJyb2xlIjoiYWRtaW4iLCJleHAiOjE3MTM3MTk2MjJ9.ik3HpnhnLYJ-lV8XOiPocJyHfjSRsXk-wm9zFU_8_Oo",
+        },
+      });
+    </script>
+  </body>
+</html>

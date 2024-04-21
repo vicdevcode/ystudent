@@ -1,5 +1,5 @@
 import amqplib from "amqplib/callback_api";
-import { amqp_exchange, amqp_queue_name, amqp_topics } from "./constant";
+import { amqpConfig } from "../config";
 import { prisma } from "../prisma";
 
 export function start(err: Error, conn: amqplib.Connection) {
@@ -8,19 +8,21 @@ export function start(err: Error, conn: amqplib.Connection) {
   conn.createChannel((err: Error, ch: amqplib.Channel) => {
     if (err) throw err;
 
-    ch.assertExchange(amqp_exchange, "topic", {
+    ch.assertExchange(amqpConfig.exchange, "topic", {
       durable: false,
     });
 
     ch.assertQueue(
-      amqp_queue_name,
+      amqpConfig.queue_name,
       {
         durable: true,
       },
       (err: Error, q: amqplib.Replies.AssertQueue) => {
         if (err) throw err;
 
-        amqp_topics.map((topic) => ch.bindQueue(q.queue, amqp_exchange, topic));
+        amqpConfig.topics.map((topic) =>
+          ch.bindQueue(q.queue, amqpConfig.exchange, topic),
+        );
 
         ch.consume(
           q.queue,
@@ -37,8 +39,8 @@ export function start(err: Error, conn: amqplib.Connection) {
                   },
                 });
                 ch.publish(
-                  amqp_exchange,
-                  `${amqp_queue_name}.faculty.created`,
+                  amqpConfig.exchange,
+                  `${amqpConfig.queue_name}.faculty.created`,
                   Buffer.from(JSON.stringify(faculty)),
                 );
                 console.log("faculty was created");
@@ -52,8 +54,8 @@ export function start(err: Error, conn: amqplib.Connection) {
                   },
                 });
                 ch.publish(
-                  amqp_exchange,
-                  `${amqp_queue_name}.group.created`,
+                  amqpConfig.exchange,
+                  `${amqpConfig.queue_name}.group.created`,
                   Buffer.from(JSON.stringify(group)),
                 );
                 console.log("group was created");
@@ -71,8 +73,8 @@ export function start(err: Error, conn: amqplib.Connection) {
                   },
                 });
                 ch.publish(
-                  amqp_exchange,
-                  `${amqp_queue_name}.group.curator_updated`,
+                  amqpConfig.exchange,
+                  `${amqpConfig.queue_name}.group.curator_updated`,
                   Buffer.from(JSON.stringify(groupCuratorUpdated)),
                 );
                 console.log("group was updated");
@@ -95,8 +97,8 @@ export function start(err: Error, conn: amqplib.Connection) {
                   },
                 });
                 ch.publish(
-                  amqp_exchange,
-                  `${amqp_queue_name}.student.created`,
+                  amqpConfig.exchange,
+                  `${amqpConfig.queue_name}.student.created`,
                   Buffer.from(JSON.stringify(user)),
                 );
                 console.log("student was created");
@@ -117,8 +119,8 @@ export function start(err: Error, conn: amqplib.Connection) {
                   },
                 });
                 ch.publish(
-                  amqp_exchange,
-                  `${amqp_queue_name}.teacher.created`,
+                  amqpConfig.exchange,
+                  `${amqpConfig.queue_name}.teacher.created`,
                   Buffer.from(JSON.stringify(teacher)),
                 );
                 console.log("teacher was created");
