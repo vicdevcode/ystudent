@@ -39,6 +39,9 @@ app.get("/", (req, res) => {
 
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
+  socket.on("disconnect", (reason) => {
+    console.log(`[${socket.id}] socket disconnected - ${reason}`);
+  });
 });
 
 amqplib.connect(amqpConfig.url, start);
