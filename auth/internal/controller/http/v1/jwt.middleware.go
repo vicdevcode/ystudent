@@ -16,8 +16,12 @@ func jwtCheckMiddleware(uj usecase.Jwt) gin.HandlerFunc {
 			unauthorized(c)
 			return
 		}
-		token := strings.Split(headerToken[0], " ")[1]
-		ok, err := uj.IsTokenValid(token, true)
+		authorization := strings.Split(headerToken[0], " ")
+		if len(authorization) != 2 {
+			unauthorized(c)
+			return
+		}
+		ok, err := uj.IsTokenValid(authorization[1], true)
 		if err != nil {
 			errorResponse(c, http.StatusUnauthorized, err.Error())
 			return

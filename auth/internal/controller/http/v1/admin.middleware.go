@@ -18,8 +18,12 @@ func adminCheckMiddleware(uj usecase.Jwt, ua usecase.Admin) gin.HandlerFunc {
 			unauthorized(c)
 			return
 		}
-		token := strings.Split(headerToken[0], " ")[1]
-		ok, err := uj.IsTokenValid(token, true)
+		authorization := strings.Split(headerToken[0], " ")
+		if len(authorization) != 2 {
+			unauthorized(c)
+			return
+		}
+		ok, err := uj.IsTokenValid(authorization[1], true)
 		if err != nil {
 			errorResponse(c, http.StatusUnauthorized, err.Error())
 			return
@@ -29,7 +33,7 @@ func adminCheckMiddleware(uj usecase.Jwt, ua usecase.Admin) gin.HandlerFunc {
 			return
 		}
 
-		id, err := uj.ExtractFromToken(token, "id", true)
+		id, err := uj.ExtractFromToken(authorization[1], "id", true)
 		if err != nil {
 			unauthorized(c)
 			return
@@ -39,7 +43,7 @@ func adminCheckMiddleware(uj usecase.Jwt, ua usecase.Admin) gin.HandlerFunc {
 			unauthorized(c)
 			return
 		}
-		login, err := uj.ExtractFromToken(token, "email", true)
+		login, err := uj.ExtractFromToken(authorization[1], "email", true)
 
 		admin, err := ua.FindOne(c, entity.Admin{
 			ID: uint(uid64),

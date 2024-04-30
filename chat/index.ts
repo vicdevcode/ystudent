@@ -20,14 +20,14 @@ const io = new Server(server, {
 io.use(async (socket, next) => {
   const access_token = socket.handshake.auth.access_token;
   const err = new Error("unathenticated");
-  if (!access_token) next(err);
+  if (!access_token) return next(err);
   const isAuth = await fetch(auth_check, {
     method: "GET",
     headers: {
       Authorization: "Bearer " + access_token,
     },
   }).then((res) => res.status === 200);
-  if (isAuth) next();
+  if (isAuth) return next();
   next(err);
 });
 
