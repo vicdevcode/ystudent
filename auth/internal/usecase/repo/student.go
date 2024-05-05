@@ -5,14 +5,14 @@ import (
 
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
-	"github.com/vicdevcode/ystudent/auth/pkg/sqlite"
+	"github.com/vicdevcode/ystudent/auth/pkg/postgres"
 )
 
 type StudentRepo struct {
-	*sqlite.SQLite
+	*postgres.Postgres
 }
 
-func NewStudent(db *sqlite.SQLite) *StudentRepo {
+func NewStudent(db *postgres.Postgres) *StudentRepo {
 	return &StudentRepo{db}
 }
 

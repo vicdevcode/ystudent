@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rabbitmq/amqp091-go"
 
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
@@ -91,13 +91,13 @@ func (r *groupRoute) findAll(c *gin.Context) {
 }
 
 type updateCurator struct {
-	TeacherId uint `json:"teacher_id"`
+	TeacherId uuid.UUID `json:"teacher_id"`
 }
 
 func (r *groupRoute) updateCurator(c *gin.Context) {
 	var body updateCurator
 
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		badRequest(c, err.Error())
 		return
@@ -109,7 +109,7 @@ func (r *groupRoute) updateCurator(c *gin.Context) {
 	}
 
 	group, err := r.u.UpdateCurator(c.Request.Context(), dto.UpdateGroupCurator{
-		ID:        uint(id),
+		ID:        id,
 		CuratorID: body.TeacherId,
 	})
 	if err != nil {

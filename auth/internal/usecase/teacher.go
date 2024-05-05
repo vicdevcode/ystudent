@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
 )
@@ -44,7 +46,7 @@ func (uc *TeacherUseCase) FindAll(c context.Context) ([]entity.User, error) {
 		return nil, err
 	}
 
-	var ids []uint
+	var ids []uuid.UUID
 	for _, student := range students {
 		ids = append(ids, student.UserID)
 	}

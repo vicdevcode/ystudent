@@ -1,1 +1,2 @@
-rabbitmq/rabbitmq.conf
+*.env
+!example.env

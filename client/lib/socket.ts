@@ -1,11 +1,19 @@
 import { chatAPI } from "./config";
-import { io } from "socket.io-client";
+import { Socket, io } from "socket.io-client";
 
-const socket = io(chatAPI, {
-  transports: ["websocket"],
-  auth: {
-    access_token: "",
-  },
-});
+interface SocketIO {
+  socket: Socket | null;
+}
 
-export default socket;
+export const socketIO: SocketIO = {
+  socket: null,
+};
+
+export const setSocket = (access_token: string) => {
+  socketIO.socket = io(chatAPI, {
+    transports: ["websocket"],
+    auth: {
+      access_token: access_token,
+    },
+  });
+};

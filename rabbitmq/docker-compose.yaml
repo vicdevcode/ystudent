@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+  y-rabbitmq:
+    container_name: y-rabbitmq
+    image: rabbitmq:3.13-management
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    networks:
+      - ystudent
+
+networks:
+  ystudent:
+    external: true

@@ -11,7 +11,6 @@ import (
 	"github.com/vicdevcode/ystudent/auth/pkg/httpserver"
 	"github.com/vicdevcode/ystudent/auth/pkg/postgres"
 	"github.com/vicdevcode/ystudent/auth/pkg/rabbitmq"
-	"github.com/vicdevcode/ystudent/auth/pkg/sqlite"
 )
 
 type Config struct {
@@ -23,7 +22,6 @@ type Config struct {
 	Admin          Admin             `yaml:"admin"           env-required:"true"`
 	JWT            JWT               `yaml:"jwt"             env-required:"true"`
 	RabbitMQ       rabbitmq.Config   `yaml:"rabbitmq"        env-required:"true"`
-	SQLite         sqlite.Config     `yaml:"sqlite"`
 }
 
 type Admin struct {

@@ -18,8 +18,8 @@ import (
 	"github.com/vicdevcode/ystudent/auth/pkg/config"
 	"github.com/vicdevcode/ystudent/auth/pkg/httpserver"
 	"github.com/vicdevcode/ystudent/auth/pkg/logger"
+	"github.com/vicdevcode/ystudent/auth/pkg/postgres"
 	"github.com/vicdevcode/ystudent/auth/pkg/rabbitmq"
-	"github.com/vicdevcode/ystudent/auth/pkg/sqlite"
 )
 
 func Run(cfg *config.Config) {
@@ -27,11 +27,11 @@ func Run(cfg *config.Config) {
 
 	log.Info(fmt.Sprintf("Starting server at Port: %s", cfg.HTTP.Port))
 
-	db, err := sqlite.New(&cfg.SQLite)
+	db, err := postgres.New(&cfg.DB)
 	if err != nil {
 		logger.Fatal(log, "Failed connect to sqlite:", err)
 	}
-	log.Info("Connected to sqlite")
+	log.Info("Connected to postgres")
 
 	// AutoMigrate
 	if cfg.Env != "local" {
@@ -43,15 +43,6 @@ func Run(cfg *config.Config) {
 
 	// UseCases
 	usecases := usecase.New(cfg, db)
-
-	// FillDatabase
-	// if cfg.FillDatabase != nil {
-	// 	if err := fillDatabase(usecases); err != nil {
-	// 		log.Error(err.Error())
-	// 		return
-	// 	}
-	// 	log.Info("DB is filled with mock data")
-	// }
 
 	// Set Admin
 	var admin *entity.Admin

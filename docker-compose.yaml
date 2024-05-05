@@ -1,12 +1,29 @@
 version: "3.8"
 services:
-  rabbitmq:
-    image: rabbitmq:3.13-management
-    container_name: rabbitmq
-    hostname: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+  y-auth:
+    container_name: y-auth
+    build:
+      context: ./auth/
+      args:
+        - CONFIG_FILE=dev.yaml
     restart: always
+    env_file:
+      - ./auth/dev.env
+    ports:
+      - "5000:5000"
+    networks:
+      - ystudent
+  y-chat:
+    container_name: y-chat
+    build: ./chat/
+    restart: always
+    env_file:
+      - ./chat/.env
+    ports:
+      - "3000:3000"
+    networks:
+      - ystudent
+
+networks:
+  ystudent:
+    external: true

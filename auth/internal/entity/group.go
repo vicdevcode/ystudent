@@ -3,14 +3,15 @@ package entity
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type Group struct {
-	ID        uint           `json:"id"                   gorm:"primarykey"`
+	ID        uuid.UUID      `json:"id"                   gorm:"uuid;default:gen_random_uuid();primarykey"`
 	Name      string         `json:"name"                 gorm:"unique"`
-	FacultyID *uint          `json:"faculty_id,omitempty"`
-	CuratorID *uint          `json:"curator_id,omitempty"`
+	FacultyID *uuid.UUID     `json:"faculty_id,omitempty" gorm:"uuid"`
+	CuratorID *uuid.UUID     `json:"curator_id,omitempty" gorm:"uuid"`
 	Students  []Student      `json:"students"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`

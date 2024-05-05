@@ -6,11 +6,6 @@ bin/*
 
 # Config
 config/*
-!config/example.config.yaml
-!config/example.prod.yaml
-# db for development
-!config/docker-compose.yaml
-cmd/test
+!config/example.yaml
 
-# SQLITE
-*.db
+cmd/test

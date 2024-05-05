@@ -1,4 +1,3 @@
-// import fio from "./fio.json";
 const fio = require("./fio.json");
 
 api = process.env.API;
@@ -173,13 +172,13 @@ const start = async () => {
       await addTeacher(`t${i}@gmail.com`);
     }
     const group_ivt202 = await addGroup(imi["id"], "ИВТ-20-2");
-    await updateCuratorGroup(group_ivt202["id"], t1["id"]);
-    for (let i = 0; i < 20; i++) {
+    await updateCuratorGroup(group_ivt202["id"], t1["teacher"]["id"]);
+    for (let i = 1; i <= 20; i++) {
       await addStudent(`s${i}@gmail.com`, group_ivt202["id"]);
     }
     const group_ivt201 = await addGroup(imi["id"], "ИВТ-20-1");
-    await updateCuratorGroup(group_ivt201["id"], t2["id"]);
-    for (let i = 20; i < 40; i++) {
+    await updateCuratorGroup(group_ivt201["id"], t2["teacher"]["id"]);
+    for (let i = 21; i <= 40; i++) {
       await addStudent(`s${i}@gmail.com`, group_ivt201["id"]);
     }
   }

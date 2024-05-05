@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
-import socket from "../../lib/socket";
+import { socketIO } from "../../lib/socket";
 import { chatAPI } from "../../lib/config";
 
 const TestChat = () => {
@@ -8,16 +8,19 @@ const TestChat = () => {
   const [time, setTime] = useState<string | null>(null);
 
   useEffect(function didMount() {
-    socket.io.on("open", () => setConnection(true));
-    socket.io.on("close", () => setConnection(false));
+    if (socketIO.socket) {
+      socketIO.socket.io.on("open", () => setConnection(true));
+      socketIO.socket.io.on("close", () => setConnection(false));
 
-    socket.on("time-msg", (data) => {
-      setTime(new Date(data.time).toString());
-    });
-
+      socketIO.socket.on("time-msg", (data) => {
+        setTime(new Date(data.time).toString());
+      });
+    }
     return function didUnmount() {
-      socket.disconnect();
-      socket.removeAllListeners();
+      if (socketIO.socket) {
+        socketIO.socket.disconnect();
+        socketIO.socket.removeAllListeners();
+      }
     };
   }, []);
 

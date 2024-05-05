@@ -3,11 +3,12 @@ package entity
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type Admin struct {
-	ID           uint           `json:"id"                   gorm:"primarykey"`
+	ID           uuid.UUID      `json:"id"                   gorm:"uuid;default:gen_random_uuid();primarykey"`
 	Login        string         `json:"login"                gorm:"unique"`
 	Password     string         `json:"password"`
 	RefreshToken string         `json:"refresh_token"`

@@ -1,0 +1,38 @@
+version: "3.8"
+services:
+  y-pgsql:
+    container_name: y-pgsql
+    image: postgres:latest
+    restart: always
+    env_file:
+      - ./postgres.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./multi-db.sh:/docker-entrypoint-initdb.d/init-multi-postgres-databases.sh
+      - postgres:/var/lib/postgresql/data
+    networks:
+      - ystudent
+  pgadmin:
+    container_name: y-pgadmin
+    image: dpage/pgadmin4:latest
+    restart: always
+    env_file:
+      - ./pgadmin.env
+    ports:
+      - "5050:80"
+    depends_on:
+      - y-pgsql
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    networks:
+      - ystudent
+
+networks:
+  ystudent:
+    name: ystudent
+    driver: bridge
+
+volumes:
+  pgadmin:
+  postgres:

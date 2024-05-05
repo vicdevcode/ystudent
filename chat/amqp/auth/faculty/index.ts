@@ -1,0 +1,1 @@
+export { AuthFacultyCreated } from "./created";

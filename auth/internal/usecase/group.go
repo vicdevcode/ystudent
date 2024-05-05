@@ -5,6 +5,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
 )
@@ -47,7 +49,7 @@ func (uc *GroupUseCase) FindOne(c context.Context, data entity.Group) (*entity.G
 
 	if len(data.Name) != 0 {
 		return uc.repo.FindOneByName(ctx, data.Name)
-	} else if data.ID != 0 {
+	} else if uuid.Nil != data.ID {
 		return uc.repo.FindOneByID(ctx, data.ID)
 	}
 
