@@ -23,6 +23,7 @@ type StudentResponse struct {
 
 type StudentUserResponse struct {
 	*entity.User
-	Password string `json:"password"`
+	GroupID  uuid.UUID `json:"group_id"`
+	Password string    `json:"password"`
 	CUD
 }

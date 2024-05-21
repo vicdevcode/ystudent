@@ -62,6 +62,7 @@ func (r *studentRoute) createStudent(c *gin.Context) {
 	}
 
 	response, err := json.Marshal(dto.StudentUserResponse{
+		GroupID:  student.GroupID,
 		User:     &student.User,
 		Password: password,
 	})
