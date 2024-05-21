@@ -15,7 +15,7 @@ export const MainEmployeeCreated = async (
         middlename: employeeData["middlename"],
         surname: employeeData["surname"],
         email: employeeData["email"],
-        roleType: employeeData["role_type"],
+        roleType: employeeData["role"],
         employee: {
           create: {
             id: employeeData["role_id"],

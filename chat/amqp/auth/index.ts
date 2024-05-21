@@ -3,12 +3,16 @@ import { AuthFacultyCreated } from "./faculty";
 import { AuthTeacherCreated } from "./teacher";
 import { AuthGroupCreated, AuthGroupCuratorUpdated } from "./group";
 import { AuthStudentCreated } from "./student";
+import { MainEmployeeCreated } from "./employee/created";
 
 export default async function AuthRouter(
   ch: amqplib.Channel,
   msg: amqplib.Message,
 ) {
   switch (msg.fields.routingKey) {
+    case "main.employee.created":
+      MainEmployeeCreated(ch, msg);
+      break;
     case "main.faculty.created":
       AuthFacultyCreated(ch, msg);
       break;
