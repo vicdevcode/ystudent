@@ -2,15 +2,17 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/gin-gonic/gin"
+	"github.com/rabbitmq/amqp091-go"
 	"gorm.io/gorm"
 
-	"github.com/gin-gonic/gin"
 	"github.com/vicdevcode/ystudent/main/internal/controller/amqp/v1/consumer"
 	v1 "github.com/vicdevcode/ystudent/main/internal/controller/http/v1"
 	"github.com/vicdevcode/ystudent/main/internal/entity"
@@ -44,24 +46,6 @@ func Run(cfg *config.Config) {
 	// UseCases
 	usecases := usecase.New(cfg, db)
 
-	// Set Admin
-	var admin *entity.User
-	if err := db.Where("email = ?", cfg.Admin.Email).First(&admin).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			if err = db.Create(&entity.User{
-				Email:    cfg.Admin.Email,
-				RoleType: entity.ADMIN,
-			}).Error; err != nil {
-				log.Error(err.Error())
-				return
-			}
-		} else {
-			log.Error(err.Error())
-			return
-		}
-	}
-	log.Info("Admin available")
-
 	// RabbitMQ
 	conn, ch, _, delivery := rabbitmq.New(&cfg.RabbitMQ)
 
@@ -76,6 +60,45 @@ func Run(cfg *config.Config) {
 	)
 
 	go consumer.Start(usecases, log)
+
+	// Set Admin
+	var admin *entity.User
+	if err := db.Where("email = ?", cfg.Admin.Email).First(&admin).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			if err = db.Create(&entity.User{
+				Email:    cfg.Admin.Email,
+				RoleType: entity.ADMIN,
+			}).Error; err != nil {
+				log.Error(err.Error())
+				return
+			}
+
+			adminJSON, err := json.Marshal(&entity.User{
+				Email:    cfg.Admin.Email,
+				RoleType: entity.ADMIN,
+			})
+			if err != nil {
+				log.Error("can not marshal admin")
+				return
+			}
+
+			ch.PublishWithContext(
+				context.Background(),
+				cfg.RabbitMQ.ExchangeName,
+				"main.admin.created",
+				false,
+				false,
+				amqp091.Publishing{
+					ContentType: "application/json",
+					Body:        adminJSON,
+				},
+			)
+		} else {
+			log.Error(err.Error())
+			return
+		}
+	}
+	log.Info("Admin available")
 
 	// HTTP SERVER
 	gin.SetMode(gin.ReleaseMode)

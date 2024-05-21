@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rabbitmq/amqp091-go"
+	"github.com/sethvargo/go-password/password"
 
 	"github.com/vicdevcode/ystudent/main/internal/dto"
 	"github.com/vicdevcode/ystudent/main/internal/entity"
@@ -29,7 +30,7 @@ func newEmployee(router *router, rmq *RabbitMQ, u usecase.Employee, l *slog.Logg
 
 type createEmployeeRequest dto.CreateEmployee
 
-type createEmployeeResponse *entity.Employee
+type createEmployeeResponse dto.EmployeeResponse
 
 func (r *employeeRoute) create(c *gin.Context) {
 	var body createEmployeeRequest
@@ -45,12 +46,25 @@ func (r *employeeRoute) create(c *gin.Context) {
 		return
 	}
 
-	response, err := json.Marshal(employee)
+	password, err := password.Generate(8, 8, 0, false, false)
 	if err != nil {
+		internalServerError(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, createEmployeeResponse(employee))
+	response, err := json.Marshal(dto.EmployeeUserResponse{
+		User:     &employee.User,
+		Password: password,
+	})
+	if err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, createEmployeeResponse{
+		Employee: employee,
+		Password: password,
+	})
 
 	r.rmq.ch.PublishWithContext(
 		c.Request.Context(),

@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rabbitmq/amqp091-go"
+	"github.com/sethvargo/go-password/password"
 
 	"github.com/vicdevcode/ystudent/main/internal/dto"
 	"github.com/vicdevcode/ystudent/main/internal/entity"
@@ -38,7 +39,7 @@ func newTeacher(
 
 type createTeacherRequest dto.CreateTeacher
 
-type createTeacherResponse *entity.Teacher
+type createTeacherResponse dto.TeacherResponse
 
 func (r *teacherRoute) createTeacher(c *gin.Context) {
 	var body createTeacherRequest
@@ -54,12 +55,25 @@ func (r *teacherRoute) createTeacher(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, createTeacherResponse(teacher))
-
-	response, err := json.Marshal(teacher)
+	password, err := password.Generate(8, 8, 0, false, false)
 	if err != nil {
+		internalServerError(c, err.Error())
 		return
 	}
+
+	response, err := json.Marshal(dto.TeacherUserResponse{
+		User:     &teacher.User,
+		Password: password,
+	})
+	if err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, createTeacherResponse{
+		Teacher:  teacher,
+		Password: password,
+	})
 
 	r.rmq.ch.PublishWithContext(
 		c.Request.Context(),

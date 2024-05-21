@@ -17,5 +17,12 @@ type CreateStudent Student
 
 type StudentResponse struct {
 	*entity.Student
+	Password string `json:"password"`
+	CUD
+}
+
+type StudentUserResponse struct {
+	*entity.User
+	Password string `json:"password"`
 	CUD
 }

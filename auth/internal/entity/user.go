@@ -1,11 +1,31 @@
 package entity
 
 import (
+	"database/sql/driver"
 	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
+type UserRole string
+
+const (
+	ADMIN     UserRole = "ADMIN"
+	STUDENT   UserRole = "STUDENT"
+	TEACHER   UserRole = "TEACHER"
+	EMPLOYEE  UserRole = "EMPLOYEE"
+	MODERATOR UserRole = "MODERATOR"
+)
+
+func (ut *UserRole) Scan(value UserRole) error {
+	*ut = value
+	return nil
+}
+
+func (ut UserRole) Value() (driver.Value, error) {
+	return string(ut), nil
+}
 
 type User struct {
 	ID           uuid.UUID      `json:"id"                   gorm:"uuid;default:gen_random_uuid();primarykey"`
@@ -15,8 +35,7 @@ type User struct {
 	Email        string         `json:"email"                gorm:"unique"`
 	Password     string         `json:"password"`
 	RefreshToken string         `json:"refresh_token"`
-	Student      *Student       `json:"student,omitempty"`
-	Teacher      *Teacher       `json:"teacher,omitempty"`
+	RoleType     UserRole       `json:"role"                 gorm:"type:user_role"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
 	DeletedAt    gorm.DeletedAt `json:"deleted_at,omitempty" gorm:"index"`

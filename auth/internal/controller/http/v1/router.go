@@ -28,13 +28,7 @@ func NewRouter(
 	handler.Use(gin.Recovery())
 	handler.Use(cors.Default())
 
-	public := handler.Group("/api/v1")
-	private := handler.Group("/api/v1")
-	protected := handler.Group("/api/v1")
-	private.Use(jwtCheckMiddleware(uc.JwtUseCase))
-	protected.Use(adminCheckMiddleware(uc.JwtUseCase, uc.AdminUseCase))
-
-	message, err := json.Marshal(StartMessage{Message: "microservice is started"})
+	message, err := json.Marshal(StartMessage{Message: "auth microservice is started"})
 	if err != nil {
 		l.Error(err.Error())
 		return
@@ -53,12 +47,5 @@ func NewRouter(
 		},
 	)
 
-	{
-		newUser(protected, uc.UserUseCase, l)
-		newStudent(protected, uc.StudentUseCase, uc.UserUseCase, uc.HashUseCase, rmq, l)
-		newTeacher(protected, uc.TeacherUseCase, uc.UserUseCase, uc.HashUseCase, rmq, l)
-		newFaculty(public, protected, uc.FacultyUseCase, rmq, l)
-		newGroup(public, protected, uc.GroupUseCase, rmq, l)
-		newAuth(public, private, uc.AdminUseCase, uc.UserUseCase, uc.HashUseCase, uc.JwtUseCase, l)
-	}
+	newAuth(handler.Group("/api/v1"), uc.UserUseCase, uc.HashUseCase, uc.JwtUseCase, l)
 }

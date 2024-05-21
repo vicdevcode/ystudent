@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rabbitmq/amqp091-go"
+	"github.com/sethvargo/go-password/password"
 
 	"github.com/vicdevcode/ystudent/main/internal/dto"
 	"github.com/vicdevcode/ystudent/main/internal/entity"
@@ -29,7 +30,7 @@ func newModerator(router *router, rmq *RabbitMQ, u usecase.User, l *slog.Logger)
 
 type createModeratorRequest dto.CreateUser
 
-type createModeratorResponse *entity.User
+type createModeratorResponse dto.ModeratorResponse
 
 func (r *moderatorRoute) create(c *gin.Context) {
 	var body createModeratorRequest
@@ -49,13 +50,25 @@ func (r *moderatorRoute) create(c *gin.Context) {
 		return
 	}
 
-	response, err := json.Marshal(moderator)
+	password, err := password.Generate(8, 8, 0, false, false)
 	if err != nil {
 		internalServerError(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, createModeratorResponse(moderator))
+	response, err := json.Marshal(createModeratorResponse{
+		User:     moderator,
+		Password: password,
+	})
+	if err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, createModeratorResponse{
+		User:     moderator,
+		Password: password,
+	})
 
 	r.rmq.ch.PublishWithContext(
 		c.Request.Context(),

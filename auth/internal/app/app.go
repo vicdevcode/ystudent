@@ -2,18 +2,15 @@ package app
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 
 	"github.com/vicdevcode/ystudent/auth/internal/controller/amqp/v1/consumer"
 	v1 "github.com/vicdevcode/ystudent/auth/internal/controller/http/v1"
-	"github.com/vicdevcode/ystudent/auth/internal/entity"
 	"github.com/vicdevcode/ystudent/auth/internal/usecase"
 	"github.com/vicdevcode/ystudent/auth/pkg/config"
 	"github.com/vicdevcode/ystudent/auth/pkg/httpserver"
@@ -43,29 +40,6 @@ func Run(cfg *config.Config) {
 
 	// UseCases
 	usecases := usecase.New(cfg, db)
-
-	// Set Admin
-	var admin *entity.Admin
-	if err := db.Where("login = ?", cfg.Admin.Login).First(&admin).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			hashedPassword, err := usecases.HashUseCase.HashPassword(cfg.Admin.Password)
-			if err != nil {
-				log.Error(err.Error())
-				return
-			}
-			if err = db.Create(&entity.Admin{
-				Login:    cfg.Admin.Login,
-				Password: hashedPassword,
-			}).Error; err != nil {
-				log.Error(err.Error())
-				return
-			}
-		} else {
-			log.Error(err.Error())
-			return
-		}
-	}
-	log.Info("Admin available")
 
 	// RabbitMQ
 	conn, ch, _, delivery := rabbitmq.New(&cfg.RabbitMQ)

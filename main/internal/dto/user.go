@@ -23,3 +23,9 @@ type UserResponse struct {
 	*entity.User
 	CUD
 }
+
+type ModeratorResponse struct {
+	*entity.User
+	Password string `json:"password"`
+	CUD
+}

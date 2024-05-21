@@ -31,6 +31,8 @@ func New(
 }
 
 func (c *Consumer) Start(uc usecase.UseCases, l *slog.Logger) {
+	adminRoute := newAdmin(uc.HashUseCase, uc.UserUseCase, l)
+	userRoute := newUser(uc.HashUseCase, uc.UserUseCase, l)
 	for {
 		select {
 		case <-c.ctx.Done():
@@ -41,36 +43,36 @@ func (c *Consumer) Start(uc usecase.UseCases, l *slog.Logger) {
 				return
 			}
 			switch d.RoutingKey {
-			// case "lol.faculties":
-			// 	var response []entity.Faculty
-			// 	if err := json.Unmarshal(d.Body, &response); err != nil {
-			// 		l.Error(err.Error())
-			// 	} else {
-			// 		l.Info(fmt.Sprintf("%v", response))
-			// 	}
-			// 	l.Debug(d.RoutingKey)
-			// 	break
-			// case "lol.groups":
-			// 	var response []entity.Group
-			// 	if err := json.Unmarshal(d.Body, &response); err != nil {
-			// 		l.Error(err.Error())
-			// 		break
-			// 	}
-			// 	student, err := uc.UserUseCase.FindOne(context.Background(), entity.User{
-			// 		ID: response[0].Students[0].UserID,
-			// 	})
-			// 	if err != nil {
-			// 		l.Error(err.Error())
-			// 		break
-			// 	}
-			// 	l.Info(student.Firstname)
-			// 	l.Debug(d.RoutingKey)
-			// 	break
+			case "main.admin.created":
+				if err := adminRoute.created(c, d); err != nil {
+					l.Error(err.Error())
+				}
+				break
+			case "main.student.created":
+				if err := userRoute.created(c, d); err != nil {
+					l.Error(err.Error())
+				}
+				break
+			case "main.teacher.created":
+				if err := userRoute.created(c, d); err != nil {
+					l.Error(err.Error())
+				}
+				break
+			case "main.employee.created":
+				if err := userRoute.created(c, d); err != nil {
+					l.Error(err.Error())
+				}
+				break
+			case "main.moderator.created":
+				if err := userRoute.created(c, d); err != nil {
+					l.Error(err.Error())
+				}
+				break
 			default:
 				l.Info(d.RoutingKey)
+				d.Acknowledger.Ack(d.DeliveryTag, false)
 				break
 			}
-			d.Ack(false)
 		}
 	}
 }

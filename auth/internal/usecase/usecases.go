@@ -7,26 +7,16 @@ import (
 )
 
 type UseCases struct {
-	UserUseCase    User
-	StudentUseCase Student
-	TeacherUseCase Teacher
-	FacultyUseCase Faculty
-	GroupUseCase   Group
-	HashUseCase    Hash
-	AdminUseCase   Admin
-	JwtUseCase     Jwt
+	UserUseCase User
+	HashUseCase Hash
+	JwtUseCase  Jwt
 }
 
 func New(cfg *config.Config, db *postgres.Postgres) UseCases {
 	t := cfg.ContextTimeout
 	return UseCases{
-		UserUseCase:    newUser(repo.NewUser(db), t),
-		StudentUseCase: newStudent(repo.NewStudent(db), repo.NewUser(db), t),
-		TeacherUseCase: newTeacher(repo.NewTeacher(db), repo.NewUser(db), t),
-		FacultyUseCase: newFaculty(repo.NewFaculty(db), t),
-		GroupUseCase:   newGroup(repo.NewGroup(db), t),
-		HashUseCase:    newHash(),
-		AdminUseCase:   newAdmin(repo.NewAdmin(db), t),
-		JwtUseCase:     newJwt(JwtConfig(cfg.JWT)),
+		UserUseCase: newUser(repo.NewUser(db), t),
+		JwtUseCase:  newJwt(JwtConfig(cfg.JWT)),
+		HashUseCase: newHash(),
 	}
 }

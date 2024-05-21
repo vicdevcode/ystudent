@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/vicdevcode/ystudent/auth/internal/dto"
 	"github.com/vicdevcode/ystudent/auth/internal/entity"
@@ -14,7 +14,6 @@ import (
 )
 
 type authRoute struct {
-	ua usecase.Admin
 	uu usecase.User
 	uh usecase.Hash
 	uj usecase.Jwt
@@ -22,26 +21,44 @@ type authRoute struct {
 }
 
 func newAuth(
-	public *gin.RouterGroup,
-	private *gin.RouterGroup,
-	ua usecase.Admin,
+	handler *gin.RouterGroup,
 	uu usecase.User,
 	uh usecase.Hash,
 	uj usecase.Jwt,
 	l *slog.Logger,
 ) {
-	r := &authRoute{ua, uu, uh, uj, l}
+	r := &authRoute{uu, uh, uj, l}
+	h := handler.Group("/auth")
 	{
-		public.GET("/auth/logout", r.logout)
-		public.POST("/auth/", r.signIn)
-		public.POST("/auth/admin", r.signInAdmin)
-		public.GET("/auth/refresh-token", r.refreshTokens)
-		private.GET("/auth/check", r.check)
+		h.GET("/check", r.check)
+		h.POST("/", r.signIn)
+		h.GET("/logout", r.logout)
+		h.GET("/refresh-token", r.refreshTokens)
 	}
 }
 
 func (r *authRoute) check(c *gin.Context) {
-	c.JSON(200, gin.H{"active": true})
+	headerToken := c.Request.Header["Authorization"]
+	if len(headerToken) == 0 {
+		unauthorized(c)
+		return
+	}
+	authorization := strings.Split(headerToken[0], " ")
+	if len(authorization) != 2 {
+		unauthorized(c)
+		return
+	}
+	ok, err := r.uj.IsTokenValid(authorization[1], true)
+	if err != nil {
+		errorResponse(c, http.StatusUnauthorized, err.Error())
+		return
+	}
+	if !ok {
+		unauthorized(c)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"active": true})
 }
 
 // sign in user
@@ -78,24 +95,14 @@ func (r *authRoute) signIn(c *gin.Context) {
 		return
 	}
 
-	var role string
-	if candidate.Student.ID != uuid.Nil {
-		role = "student"
-	} else if candidate.Teacher.ID != uuid.Nil {
-		role = "teacher"
-	} else {
-		internalServerError(c, "internal server error")
-		return
-	}
-
 	tokens, err := r.uj.CreateTokens(dto.AccessTokenPayload{
 		ID:    fmt.Sprintf("%v", candidate.ID),
 		Email: candidate.Email,
-		Role:  role,
+		Role:  string(candidate.RoleType),
 	}, dto.RefreshTokenPayload{
 		ID:    fmt.Sprintf("%v", candidate.ID),
 		Email: candidate.Email,
-		Role:  role,
+		Role:  string(candidate.RoleType),
 	})
 	if err != nil {
 		internalServerError(c, err.Error())
@@ -120,72 +127,6 @@ func (r *authRoute) signIn(c *gin.Context) {
 	})
 }
 
-// signInAdmin
-
-type signInAdminRequest struct {
-	Login    string `json:"login"`
-	Password string `json:"password"`
-}
-
-type signInAdminResponse struct {
-	Admin        *entity.Admin `json:"admin"`
-	AccessToken  string        `json:"access_token"`
-	RefreshToken string        `json:"refresh_token"`
-}
-
-func (r *authRoute) signInAdmin(c *gin.Context) {
-	var body signInAdminRequest
-	if err := c.ShouldBindJSON(&body); err != nil {
-		badRequest(c, err.Error())
-		return
-	}
-
-	candidate, err := r.ua.FindOne(c, entity.Admin{
-		Login: body.Login,
-	})
-	if err != nil {
-		badRequest(c, err.Error())
-		return
-	}
-
-	ok := r.uh.CheckPasswordHash(body.Password, candidate.Password)
-	if !ok {
-		badRequest(c, "incorrect password")
-		return
-	}
-
-	tokens, err := r.uj.CreateTokens(dto.AccessTokenPayload{
-		ID:    fmt.Sprintf("%v", candidate.ID),
-		Email: candidate.Login,
-		Role:  "admin",
-	}, dto.RefreshTokenPayload{
-		ID:    fmt.Sprintf("%v", candidate.ID),
-		Email: candidate.Login,
-		Role:  "admin",
-	})
-	if err != nil {
-		internalServerError(c, err.Error())
-		return
-	}
-
-	admin, err := r.ua.UpdateRefreshToken(c.Request.Context(), dto.UpdateRefreshToken{
-		ID:           candidate.ID,
-		RefreshToken: tokens.RefreshToken,
-	})
-	if err != nil {
-		internalServerError(c, err.Error())
-		return
-	}
-
-	c.SetCookie("refresh_token", tokens.RefreshToken, 3600, "/", "localhost", false, true)
-
-	c.JSON(http.StatusOK, &signInAdminResponse{
-		Admin:        admin,
-		AccessToken:  tokens.AccessToken,
-		RefreshToken: tokens.RefreshToken,
-	})
-}
-
 // refresh tokens
 
 type refreshTokensResponse *dto.Tokens
@@ -201,44 +142,36 @@ func (r *authRoute) refreshTokens(c *gin.Context) {
 		return
 	}
 
-	role, err := r.uj.ExtractFromToken(refreshToken, "role", false)
+	user, err := r.uu.FindOne(c, entity.User{
+		RefreshToken: refreshToken,
+	})
 	if err != nil {
 		unauthorized(c)
 		return
 	}
 
-	if role == "admin" {
-		admin, err := r.ua.FindOne(c, entity.Admin{
-			RefreshToken: refreshToken,
-		})
-		if err != nil {
-			unauthorized(c)
-			return
-		}
+	tokens, err := r.uj.CreateTokens(dto.AccessTokenPayload{
+		ID:    fmt.Sprintf("%v", user.ID),
+		Email: user.Email,
+		Role:  string(user.RoleType),
+	}, dto.RefreshTokenPayload{
+		ID:    fmt.Sprintf("%v", user.ID),
+		Email: user.Email,
+		Role:  string(user.RoleType),
+	})
 
-		tokens, err := r.uj.CreateTokens(dto.AccessTokenPayload{
-			ID:    fmt.Sprintf("%v", admin.ID),
-			Email: admin.Login,
-			Role:  role,
-		}, dto.RefreshTokenPayload{
-			ID:    fmt.Sprintf("%v", admin.ID),
-			Email: admin.Login,
-			Role:  role,
-		})
+	_, err = r.uu.UpdateRefreshToken(
+		c,
+		dto.UpdateRefreshToken{ID: user.ID, RefreshToken: tokens.RefreshToken},
+	)
 
-		_, err = r.ua.UpdateRefreshToken(
-			c,
-			dto.UpdateRefreshToken{ID: admin.ID, RefreshToken: tokens.RefreshToken},
-		)
+	c.SetCookie("refresh_token", tokens.RefreshToken, 3600, "/", "localhost", false, true)
 
-		c.SetCookie("refresh_token", tokens.RefreshToken, 3600, "/", "localhost", false, true)
-
-		if err != nil {
-			return
-		}
-
-		c.JSON(http.StatusOK, refreshTokensResponse(tokens))
+	if err != nil {
+		return
 	}
+
+	c.JSON(http.StatusOK, refreshTokensResponse(tokens))
 }
 
 type logoutResponse struct {
@@ -247,51 +180,22 @@ type logoutResponse struct {
 
 func (r *authRoute) logout(c *gin.Context) {
 	refreshToken, err := c.Cookie("refresh_token")
-	if err != nil {
-		badRequest(c, "cookie not set")
+	if err != nil || refreshToken == "" {
+		c.JSON(http.StatusOK, logoutResponse{Message: "user already logged out"})
 		return
 	}
-	if refreshToken == "" {
-		badRequest(c, "refresh token is empty")
-		return
-	}
-
-	role, err := r.uj.ExtractFromToken(refreshToken, "role", false)
+	user, err := r.uu.FindOne(c, entity.User{
+		RefreshToken: refreshToken,
+	})
 	if err != nil {
 		unauthorized(c)
 		return
 	}
 
-	if role == "admin" {
-		admin, err := r.ua.FindOne(c, entity.Admin{
-			RefreshToken: refreshToken,
-		})
-		if err != nil {
-			unauthorized(c)
-			return
-		}
-
-		_, err = r.ua.UpdateRefreshToken(c, dto.UpdateRefreshToken{ID: admin.ID, RefreshToken: ""})
-		if err != nil {
-			internalServerError(c, "can not delete refresh token in db")
-			return
-		}
-	} else if role == "student" || role == "teacher" {
-		user, err := r.uu.FindOne(c, entity.User{
-			RefreshToken: refreshToken,
-		})
-		if err != nil {
-			unauthorized(c)
-			return
-		}
-
-		_, err = r.uu.UpdateRefreshToken(c, dto.UpdateRefreshToken{ID: user.ID, RefreshToken: ""})
-		if err != nil {
-			internalServerError(c, "can not delete refresh token in db")
-			return
-		}
-	} else {
-		internalServerError(c, fmt.Sprintf("this role %s is not exists", role))
+	_, err = r.uu.UpdateRefreshToken(c, dto.UpdateRefreshToken{ID: user.ID, RefreshToken: ""})
+	if err != nil {
+		c.SetCookie("refresh_token", "", -1, "/", "localhost", false, true)
+		internalServerError(c, "can not delete refresh token in db")
 		return
 	}
 	c.SetCookie("refresh_token", "", -1, "/", "localhost", false, true)

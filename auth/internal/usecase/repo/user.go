@@ -27,6 +27,7 @@ func (r *UserRepo) Create(ctx context.Context, data dto.CreateUser) (*entity.Use
 		Surname:    data.Surname,
 		Email:      data.Email,
 		Password:   data.Password,
+		RoleType:   data.Role,
 	}
 	if err := r.WithContext(ctx).Create(user).Error; err != nil {
 		return nil, err
@@ -38,7 +39,7 @@ func (r *UserRepo) Create(ctx context.Context, data dto.CreateUser) (*entity.Use
 
 func (r *UserRepo) FindAll(ctx context.Context) ([]entity.User, error) {
 	var users []entity.User
-	if err := r.WithContext(ctx).Preload("Student").Preload("Teacher").Find(&users).Error; err != nil {
+	if err := r.WithContext(ctx).Find(&users).Error; err != nil {
 		return nil, err
 	}
 	return users, nil
@@ -46,7 +47,7 @@ func (r *UserRepo) FindAll(ctx context.Context) ([]entity.User, error) {
 
 func (r *UserRepo) FindAllByIDs(ctx context.Context, ids []uuid.UUID) ([]entity.User, error) {
 	var users []entity.User
-	if err := r.WithContext(ctx).Preload("Student").Preload("Teacher").Find(&users, ids).Error; err != nil {
+	if err := r.WithContext(ctx).Find(&users, ids).Error; err != nil {
 		return nil, err
 	}
 	return users, nil
@@ -54,7 +55,7 @@ func (r *UserRepo) FindAllByIDs(ctx context.Context, ids []uuid.UUID) ([]entity.
 
 func (r *UserRepo) FindOneByID(ctx context.Context, id uuid.UUID) (*entity.User, error) {
 	var user *entity.User
-	if err := r.WithContext(ctx).Where("id = ?", id).Preload("Student").Preload("Teacher").First(&user).Error; err != nil {
+	if err := r.WithContext(ctx).Where("id = ?", id).First(&user).Error; err != nil {
 		return nil, err
 	}
 
@@ -63,7 +64,7 @@ func (r *UserRepo) FindOneByID(ctx context.Context, id uuid.UUID) (*entity.User,
 
 func (r *UserRepo) FindOneByEmail(ctx context.Context, email string) (*entity.User, error) {
 	var user *entity.User
-	if err := r.WithContext(ctx).Where("email = ?", email).Preload("Student").Preload("Teacher").First(&user).Error; err != nil {
+	if err := r.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
 	}
 
@@ -75,7 +76,7 @@ func (r *UserRepo) FindOneByRefreshToken(
 	refreshToken string,
 ) (*entity.User, error) {
 	var user *entity.User
-	if err := r.WithContext(ctx).Where("refresh_token = ?", refreshToken).Preload("Student").Preload("Teacher").First(&user).Error; err != nil {
+	if err := r.WithContext(ctx).Where("refresh_token = ?", refreshToken).First(&user).Error; err != nil {
 		return nil, err
 	}
 

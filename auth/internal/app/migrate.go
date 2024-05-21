@@ -7,12 +7,7 @@ import (
 
 func migrate(db *postgres.Postgres) error {
 	if err := db.AutoMigrate(
-		&entity.Admin{},
 		&entity.User{},
-		&entity.Faculty{},
-		&entity.Teacher{},
-		&entity.Group{},
-		&entity.Student{},
 	); err != nil {
 		return err
 	}

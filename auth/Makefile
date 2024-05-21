@@ -29,6 +29,16 @@ migrate: build-migrate
 	@${BINARY_MIGRATE_PATH}
 	@echo 'End migrating'
 
+migrate-reset: build-migrate
+	@echo 'Launch migrate script'
+	@${BINARY_MIGRATE_PATH} --run=reset
+	@echo 'End migrating'
+
+migrate-drop: build-migrate
+	@echo 'Launch migrate script'
+	@${BINARY_MIGRATE_PATH} --run=drop
+	@echo 'End migrating'
+
 test-script: build-test-script
 	@echo 'Launch test script'
 	@${BINARY_TEST_SCRIPT_PATH}
