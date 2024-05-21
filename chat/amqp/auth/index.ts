@@ -9,19 +9,19 @@ export default async function AuthRouter(
   msg: amqplib.Message,
 ) {
   switch (msg.fields.routingKey) {
-    case "auth.faculty.created":
+    case "main.faculty.created":
       AuthFacultyCreated(ch, msg);
       break;
-    case "auth.group.created":
+    case "main.group.created":
       AuthGroupCreated(ch, msg);
       break;
-    case "auth.group.curator_updated":
+    case "main.group.curator_updated":
       AuthGroupCuratorUpdated(ch, msg);
       break;
-    case "auth.student.created":
+    case "main.student.created":
       AuthStudentCreated(ch, msg);
       break;
-    case "auth.teacher.created":
+    case "main.teacher.created":
       AuthTeacherCreated(ch, msg as amqplib.Message);
       break;
     default:

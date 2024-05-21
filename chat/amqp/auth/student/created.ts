@@ -15,6 +15,7 @@ export const AuthStudentCreated = async (
         middlename: studentData["middlename"],
         surname: studentData["surname"],
         email: studentData["email"],
+        roleType: studentData["role_type"],
         student: {
           create: {
             group: {

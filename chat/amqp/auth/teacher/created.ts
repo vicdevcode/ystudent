@@ -15,9 +15,10 @@ export const AuthTeacherCreated = async (
         middlename: teacherData["middlename"],
         surname: teacherData["surname"],
         email: teacherData["email"],
+        roleType: teacherData["role_type"],
         teacher: {
           create: {
-            id: teacherData["teacher"]["id"],
+            id: teacherData["role_id"],
           },
         },
       },

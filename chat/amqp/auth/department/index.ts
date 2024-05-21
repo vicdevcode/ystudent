@@ -1,0 +1,1 @@
+export { MainDepartmentCreated } from "./created";

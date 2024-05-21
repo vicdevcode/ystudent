@@ -2,31 +2,31 @@ import amqplib from "amqplib/callback_api";
 import { amqpConfig } from "../../../config";
 import { prisma } from "../../../prisma";
 
-export const AuthGroupCreated = async (
+export const MainDepartmentCreated = async (
   ch: amqplib.Channel,
   msg: amqplib.Message,
 ) => {
   try {
-    const groupData = JSON.parse(msg.content.toString());
-    console.log(groupData);
-    const group = await prisma.group.create({
+    const departmentData = JSON.parse(msg.content.toString());
+    console.log(departmentData);
+    const group = await prisma.department.create({
       data: {
-        id: groupData["id"],
-        name: groupData["name"],
-        department: {
+        id: departmentData["id"],
+        name: departmentData["name"],
+        faculty: {
           connect: {
-            id: groupData["department_id"],
+            id: departmentData["faculty_id"],
           },
         },
       },
     });
     ch.publish(
       amqpConfig.exchange,
-      `${amqpConfig.queue_name}.group.created`,
+      `${amqpConfig.queue_name}.department.created`,
       Buffer.from(JSON.stringify(group)),
     );
     ch.ack(msg);
-    console.log("group was created");
+    console.log("department was created");
   } catch {
     console.log("smth went wrong");
   }
