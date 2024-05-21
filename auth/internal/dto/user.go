@@ -1,6 +1,10 @@
 package dto
 
-import "github.com/vicdevcode/ystudent/auth/internal/entity"
+import (
+	"github.com/google/uuid"
+
+	"github.com/vicdevcode/ystudent/auth/internal/entity"
+)
 
 type Fio struct {
 	Firstname  string `json:"firstname"  binding:"required,alphaunicode"`
@@ -10,6 +14,7 @@ type Fio struct {
 
 type CreateUser struct {
 	Fio
+	ID       uuid.UUID       `json:"id"`
 	Email    string          `json:"email"`
 	Password string          `json:"password"`
 	Role     entity.UserRole `json:"user_role"`

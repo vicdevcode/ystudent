@@ -22,6 +22,7 @@ func NewUser(db *postgres.Postgres) *UserRepo {
 
 func (r *UserRepo) Create(ctx context.Context, data dto.CreateUser) (*entity.User, error) {
 	user := &entity.User{
+		ID:         data.ID,
 		Firstname:  data.Firstname,
 		Middlename: data.Middlename,
 		Surname:    data.Surname,

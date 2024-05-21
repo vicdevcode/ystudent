@@ -37,6 +37,7 @@ func (r *adminRoute) created(c *Consumer, d amqp091.Delivery) error {
 	}
 
 	_, err = r.uu.Create(c.ctx, dto.CreateUser{
+		ID:       admin.ID,
 		Email:    admin.Email,
 		Password: hashedPassword,
 		Role:     entity.UserRole(admin.RoleType),

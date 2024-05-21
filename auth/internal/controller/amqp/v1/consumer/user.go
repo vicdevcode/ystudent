@@ -32,15 +32,13 @@ func (r *userRoute) created(c *Consumer, d amqp091.Delivery) error {
 		return err
 	}
 
-	r.l.Info(string(d.Body))
-	r.l.Info("", slog.Attr{Key: "", Value: slog.AnyValue(user)})
-
 	hashedPassword, err := r.uh.HashPassword(user.Password)
 	if err != nil {
 		return err
 	}
 
 	_, err = r.uu.Create(c.ctx, dto.CreateUser{
+		ID: user.ID,
 		Fio: dto.Fio{
 			Firstname:  user.Firstname,
 			Middlename: user.Middlename,

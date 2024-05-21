@@ -65,18 +65,16 @@ func Run(cfg *config.Config) {
 	var admin *entity.User
 	if err := db.Where("email = ?", cfg.Admin.Email).First(&admin).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			if err = db.Create(&entity.User{
+			admin := &entity.User{
 				Email:    cfg.Admin.Email,
 				RoleType: entity.ADMIN,
-			}).Error; err != nil {
+			}
+			if err = db.Create(admin).Error; err != nil {
 				log.Error(err.Error())
 				return
 			}
 
-			adminJSON, err := json.Marshal(&entity.User{
-				Email:    cfg.Admin.Email,
-				RoleType: entity.ADMIN,
-			})
+			adminJSON, err := json.Marshal(admin)
 			if err != nil {
 				log.Error("can not marshal admin")
 				return
