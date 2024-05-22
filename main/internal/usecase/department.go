@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/vicdevcode/ystudent/main/internal/dto"
 	"github.com/vicdevcode/ystudent/main/internal/entity"
 )
@@ -37,6 +39,26 @@ func (uc *DepartmentUseCase) FindAll(c context.Context) ([]entity.Department, er
 	defer cancel()
 
 	return uc.departmentRepo.FindAll(ctx)
+}
+
+func (uc *DepartmentUseCase) Update(
+	c context.Context,
+	data dto.UpdateDepartment,
+) (*entity.Department, error) {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+
+	return uc.departmentRepo.Update(ctx, data)
+}
+
+func (uc *DepartmentUseCase) Delete(
+	c context.Context,
+	id uuid.UUID,
+) error {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+
+	return uc.departmentRepo.Delete(ctx, id)
 }
 
 func (uc *DepartmentUseCase) AddEmployee(

@@ -29,7 +29,9 @@ func newGroup(
 	r := &groupRoute{rmq, u, l}
 	{
 		router.protected.POST("/group/", r.create)
-		router.protected.PUT("/group/:id", r.updateCurator)
+		router.protected.PUT("/group/:id", r.update)
+		router.protected.DELETE("/group/:id", r.delete)
+		// router.protected.PUT("/group/update_curator/:id", r.updateCurator)
 		router.public.GET("/groups/", r.findAll)
 	}
 }
@@ -135,4 +137,64 @@ func (r *groupRoute) updateCurator(c *gin.Context) {
 			Body:        response,
 		},
 	)
+}
+
+type updateGroupRequest dto.UpdateGroupBody
+
+type updateGroupResponse *entity.Group
+
+func (r *groupRoute) update(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+
+	var body updateGroupRequest
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+
+	r.l.Info("", slog.Any("", body))
+
+	data := dto.UpdateGroup{
+		ID: id,
+	}
+	if body.Name != "" {
+		data.Name = body.Name
+	} else if body.CuratorID != uuid.Nil {
+		data.CuratorID = &body.CuratorID
+	} else if body.DepartmentID != uuid.Nil {
+		data.DepartmentID = &body.DepartmentID
+	}
+
+	group, err := r.u.Update(c.Request.Context(), data)
+	if err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, updateGroupResponse(group))
+}
+
+type deleteGroupResponse struct {
+	Message string `json:"message"`
+}
+
+func (r *groupRoute) delete(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+	if err := r.u.Delete(c.Request.Context(), id); err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, deleteGroupResponse{
+		Message: "group was deleted",
+	})
 }

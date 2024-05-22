@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rabbitmq/amqp091-go"
 
 	"github.com/vicdevcode/ystudent/main/internal/dto"
@@ -27,6 +28,8 @@ func newFaculty(
 ) {
 	r := &facultyRoute{rmq, u, l}
 	{
+		router.protected.PUT("/faculty/:id", r.update)
+		router.protected.DELETE("/faculty/:id", r.delete)
 		router.protected.POST("/faculty/", r.create)
 		router.public.GET("/faculties/", r.findAll)
 	}
@@ -85,4 +88,55 @@ func (r *facultyRoute) findAll(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, findAllFacultyResponse{Faculties: faculties})
+}
+
+type updateFacultyRequest dto.CreateFaculty
+
+type updateFacultyResponse *entity.Faculty
+
+func (r *facultyRoute) update(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	r.l.Info(c.Param("id"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+
+	var body updateFacultyRequest
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+
+	faculty, err := r.u.Update(c.Request.Context(), dto.UpdateFaculty{
+		ID:   id,
+		Name: body.Name,
+	})
+	if err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, updateFacultyResponse(faculty))
+}
+
+type deleteFacultyResponse struct {
+	Message string `json:"message"`
+}
+
+func (r *facultyRoute) delete(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+	if err := r.u.Delete(c.Request.Context(), id); err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, deleteFacultyResponse{
+		Message: "faculty was deleted",
+	})
 }

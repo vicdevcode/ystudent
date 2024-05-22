@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rabbitmq/amqp091-go"
 
 	"github.com/vicdevcode/ystudent/main/internal/dto"
@@ -28,6 +29,8 @@ func newDepartment(
 	r := &departmentRoute{rmq, u, l}
 	{
 		router.protected.POST("/department/", r.create)
+		router.protected.PUT("/department/:id", r.update)
+		router.protected.DELETE("/department/:id", r.delete)
 		router.protected.POST("/department/add-employee/", r.addEmployee)
 		router.protected.POST("/department/delete-employee/", r.deleteEmployee)
 		router.public.GET("/departments/", r.findAll)
@@ -86,6 +89,59 @@ func (r *departmentRoute) findAll(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, findAllDepartmentResponse{Departments: departments})
+}
+
+type updateDepartmentRequest dto.UpdateDepartmentBody
+
+type updateDepartmentResponse *entity.Department
+
+func (r *departmentRoute) update(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+
+	var body updateDepartmentRequest
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+
+	r.l.Info("", slog.Any("", body))
+
+	department, err := r.u.Update(c.Request.Context(), dto.UpdateDepartment{
+		ID:        id,
+		Name:      body.Name,
+		FacultyID: body.FacultyID,
+	})
+	if err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, updateDepartmentResponse(department))
+}
+
+type deleteDepartmentResponse struct {
+	Message string `json:"message"`
+}
+
+func (r *departmentRoute) delete(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+	if err := r.u.Delete(c.Request.Context(), id); err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, deleteDepartmentResponse{
+		Message: "department was deleted",
+	})
 }
 
 type addEmployeeToDepartmentRequest dto.AddEmployeeToDepartment

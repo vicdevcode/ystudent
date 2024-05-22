@@ -56,6 +56,16 @@ func (uc *GroupUseCase) FindOne(c context.Context, data entity.Group) (*entity.G
 	return nil, errors.New("record not found")
 }
 
+func (uc *GroupUseCase) Update(
+	c context.Context,
+	data dto.UpdateGroup,
+) (*entity.Group, error) {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+
+	return uc.repo.Update(ctx, data)
+}
+
 func (uc *GroupUseCase) UpdateCurator(
 	c context.Context,
 	data dto.UpdateGroupCurator,
@@ -67,4 +77,14 @@ func (uc *GroupUseCase) UpdateCurator(
 		return nil, err
 	}
 	return group, nil
+}
+
+func (uc *GroupUseCase) Delete(
+	c context.Context,
+	id uuid.UUID,
+) error {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+
+	return uc.repo.Delete(ctx, id)
 }

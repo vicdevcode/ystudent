@@ -56,15 +56,21 @@ type (
 	Faculty interface {
 		Create(context.Context, dto.CreateFaculty) (*entity.Faculty, error)
 		FindAll(context.Context) ([]entity.Faculty, error)
+		Update(context.Context, dto.UpdateFaculty) (*entity.Faculty, error)
+		Delete(context.Context, uuid.UUID) error
 	}
 	FacultyRepo interface {
 		Create(context.Context, dto.CreateFaculty) (*entity.Faculty, error)
 		FindAll(context.Context) ([]entity.Faculty, error)
+		Update(context.Context, dto.UpdateFaculty) (*entity.Faculty, error)
+		Delete(context.Context, uuid.UUID) error
 	}
 	// Department
 	Department interface {
 		Create(context.Context, dto.CreateDepartment) (*entity.Department, error)
 		FindAll(context.Context) ([]entity.Department, error)
+		Update(context.Context, dto.UpdateDepartment) (*entity.Department, error)
+		Delete(context.Context, uuid.UUID) error
 		AddEmployee(context.Context, dto.AddEmployeeToDepartment) (*entity.Department, error)
 		DeleteEmployee(
 			context.Context,
@@ -75,6 +81,8 @@ type (
 		Create(context.Context, dto.CreateDepartment) (*entity.Department, error)
 		FindAll(context.Context) ([]entity.Department, error)
 		FindOneByID(context.Context, uuid.UUID) (*entity.Department, error)
+		Update(context.Context, dto.UpdateDepartment) (*entity.Department, error)
+		Delete(context.Context, uuid.UUID) error
 		AddEmployee(context.Context, dto.AddEmployeeToDepartment) (*entity.Department, error)
 		DeleteEmployee(
 			context.Context,
@@ -87,14 +95,18 @@ type (
 		Create(context.Context, dto.CreateGroup) (*entity.Group, error)
 		FindOne(context.Context, entity.Group) (*entity.Group, error)
 		FindAll(context.Context) ([]entity.Group, error)
+		Update(context.Context, dto.UpdateGroup) (*entity.Group, error)
 		UpdateCurator(context.Context, dto.UpdateGroupCurator) (*entity.Group, error)
+		Delete(context.Context, uuid.UUID) error
 	}
 	GroupRepo interface {
 		Create(context.Context, dto.CreateGroup) (*entity.Group, error)
 		FindOneByID(context.Context, uuid.UUID) (*entity.Group, error)
 		FindOneByName(context.Context, string) (*entity.Group, error)
 		FindAll(context.Context) ([]entity.Group, error)
+		Update(context.Context, dto.UpdateGroup) (*entity.Group, error)
 		UpdateCurator(context.Context, dto.UpdateGroupCurator) (*entity.Group, error)
+		Delete(context.Context, uuid.UUID) error
 	}
 	// Jwt
 	Jwt interface {

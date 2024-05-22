@@ -51,6 +51,24 @@ func (r *DepartmentRepo) FindOneByID(
 	return department, nil
 }
 
+func (r *DepartmentRepo) Update(
+	ctx context.Context,
+	data dto.UpdateDepartment,
+) (*entity.Department, error) {
+	department := &entity.Department{ID: data.ID}
+	if err := r.WithContext(ctx).Model(department).Updates(entity.Department{
+		Name:      data.Name,
+		FacultyID: data.FacultyID,
+	}).Error; err != nil {
+		return nil, err
+	}
+	return department, nil
+}
+
+func (r *DepartmentRepo) Delete(ctx context.Context, id uuid.UUID) error {
+	return r.WithContext(ctx).Unscoped().Delete(&entity.Department{ID: id}).Error
+}
+
 func (r *DepartmentRepo) AddEmployee(
 	ctx context.Context,
 	data dto.AddEmployeeToDepartment,
