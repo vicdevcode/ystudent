@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -18,6 +19,7 @@ type groupRoute struct {
 	rmq *RabbitMQ
 	ug  usecase.Group
 	ud  usecase.Department
+	ut  usecase.Teacher
 	l   *slog.Logger
 }
 
@@ -26,9 +28,10 @@ func newGroup(
 	rmq *RabbitMQ,
 	ug usecase.Group,
 	ud usecase.Department,
+	ut usecase.Teacher,
 	l *slog.Logger,
 ) {
-	r := &groupRoute{rmq, ug, ud, l}
+	r := &groupRoute{rmq, ug, ud, ut, l}
 	{
 		router.protected.POST("/group/", r.create)
 		router.protected.PUT("/group/:id", r.update)
@@ -106,9 +109,31 @@ func (r *groupRoute) findAll(c *gin.Context) {
 			internalServerError(c, err.Error())
 			return
 		}
+		var curatorFio string
+		if group.CuratorID != nil {
+			curator, err := r.ut.FindOne(c.Request.Context(), entity.Teacher{
+				ID: *group.CuratorID,
+			})
+			if err != nil {
+				r.l.Error(err.Error())
+				internalServerError(c, err.Error())
+				return
+			}
+			if curator.User.Middlename != "" {
+				curatorFio = fmt.Sprintf(
+					"%s %s %s",
+					curator.User.Surname,
+					curator.User.Firstname,
+					curator.User.Middlename,
+				)
+			} else {
+				curatorFio = fmt.Sprintf("%s %s", curator.User.Surname, curator.User.Firstname)
+			}
+		}
 		response = append(response, dto.FindAllGroupResponse{
 			Group:          &group,
 			DepartmentName: department.Name,
+			CuratorFio:     curatorFio,
 		})
 	}
 
@@ -180,8 +205,6 @@ func (r *groupRoute) update(c *gin.Context) {
 		badRequest(c, err.Error())
 		return
 	}
-
-	r.l.Info("", slog.Any("", body))
 
 	data := dto.UpdateGroup{
 		ID: id,

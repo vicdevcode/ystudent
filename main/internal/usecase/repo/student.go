@@ -3,6 +3,8 @@ package repo
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"github.com/vicdevcode/ystudent/main/internal/dto"
 	"github.com/vicdevcode/ystudent/main/internal/entity"
 	"github.com/vicdevcode/ystudent/main/pkg/postgres"
@@ -41,4 +43,12 @@ func (r *StudentRepo) FindAll(ctx context.Context, page dto.Page) ([]entity.Stud
 		return nil, err
 	}
 	return students, nil
+}
+
+func (r *StudentRepo) FindOneByID(ctx context.Context, id uuid.UUID) (*entity.Student, error) {
+	var student *entity.Student
+	if err := r.WithContext(ctx).Preload("User").Where("id = ?", id).First(&student).Error; err != nil {
+		return nil, err
+	}
+	return student, nil
 }

@@ -9,12 +9,14 @@ import (
 type Group struct {
 	Name         string `json:"name"          binding:"required"`
 	DepartmentID string `json:"department_id" binding:"required,uuid"`
+	CuratorID    string `json:"curator_id"    binding:"required,uuid"`
 }
 
 type CreateGroup Group
 
 type FindAllGroupResponse struct {
 	DepartmentName string `json:"department_name"`
+	CuratorFio     string `json:"curator_fio"`
 	*entity.Group
 }
 

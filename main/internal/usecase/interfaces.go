@@ -27,19 +27,23 @@ type (
 	Student interface {
 		Create(context.Context, dto.CreateStudent) (*entity.Student, error)
 		FindAll(context.Context, dto.Page) ([]entity.Student, error)
+		FindOne(context.Context, entity.Student) (*entity.Student, error)
 	}
 	StudentRepo interface {
 		Create(context.Context, dto.CreateStudent) (*entity.Student, error)
 		FindAll(context.Context, dto.Page) ([]entity.Student, error)
+		FindOneByID(context.Context, uuid.UUID) (*entity.Student, error)
 	}
 	// Teacher
 	Teacher interface {
 		Create(context.Context, dto.CreateTeacher) (*entity.Teacher, error)
 		FindAll(context.Context, dto.Page) ([]entity.Teacher, error)
+		FindOne(context.Context, entity.Teacher) (*entity.Teacher, error)
 	}
 	TeacherRepo interface {
 		Create(context.Context, dto.CreateTeacher) (*entity.Teacher, error)
 		FindAll(context.Context, dto.Page) ([]entity.Teacher, error)
+		FindOneByID(context.Context, uuid.UUID) (*entity.Teacher, error)
 	}
 	// Employee
 	Employee interface {

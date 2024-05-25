@@ -2,7 +2,10 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/vicdevcode/ystudent/main/internal/dto"
 	"github.com/vicdevcode/ystudent/main/internal/entity"
@@ -37,4 +40,17 @@ func (uc *StudentUseCase) FindAll(c context.Context, page dto.Page) ([]entity.St
 	defer cancel()
 
 	return uc.studentRepo.FindAll(ctx, page)
+}
+
+func (uc *StudentUseCase) FindOne(
+	c context.Context,
+	data entity.Student,
+) (*entity.Student, error) {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+
+	if uuid.Nil != data.ID {
+		return uc.studentRepo.FindOneByID(ctx, data.ID)
+	}
+	return nil, errors.New("record not found")
 }

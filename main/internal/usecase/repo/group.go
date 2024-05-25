@@ -23,7 +23,11 @@ func (r *GroupRepo) Create(ctx context.Context, data dto.CreateGroup) (*entity.G
 	if err != nil {
 		return nil, err
 	}
-	group := &entity.Group{Name: data.Name, DepartmentID: &departmentID}
+	curatorID, err := uuid.Parse(data.CuratorID)
+	if err != nil {
+		return nil, err
+	}
+	group := &entity.Group{Name: data.Name, DepartmentID: &departmentID, CuratorID: &curatorID}
 	if err := r.WithContext(ctx).Create(group).Error; err != nil {
 		return nil, err
 	}
@@ -57,7 +61,7 @@ func (r *GroupRepo) FindOneByName(ctx context.Context, name string) (*entity.Gro
 
 func (r *GroupRepo) Update(ctx context.Context, data dto.UpdateGroup) (*entity.Group, error) {
 	group := &entity.Group{ID: data.ID}
-	if err := r.WithContext(ctx).Model(group).Updates(entity.Group{Name: data.Name, DepartmentID: data.DepartmentID, CuratorID: data.CuratorID}).Error; err != nil {
+	if err := r.WithContext(ctx).Model(&group).Updates(entity.Group{Name: data.Name, DepartmentID: data.DepartmentID, CuratorID: data.CuratorID}).Error; err != nil {
 		return nil, err
 	}
 	return group, nil
