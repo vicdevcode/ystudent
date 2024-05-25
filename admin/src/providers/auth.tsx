@@ -39,11 +39,20 @@ export const AuthProvider: FC<AuthProvidersProps> = (props) => {
   const [isAuth, setAuth] = useState(defaultValues.isAuth);
   const [token, setToken] = useState(defaultValues.token);
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    setToken("");
-    setAuth(false);
-    navigate("/auth");
+  const logout = async () => {
+    return fetch(import.meta.env.VITE_AUTH_API + "/logout", {
+      method: "GET",
+    }).then(async (res) => {
+      if (res.status === 200) {
+        localStorage.removeItem("token");
+        setToken("");
+        setAuth(false);
+        navigate("/auth");
+        return;
+      }
+      const json = await res.json();
+      console.error(json);
+    });
   };
 
   const refresh = async () => {

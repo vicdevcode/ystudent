@@ -27,12 +27,20 @@ func (r *FacultyRepo) Create(ctx context.Context, data dto.CreateFaculty) (*enti
 	return faculty, nil
 }
 
-func (r *FacultyRepo) FindAll(ctx context.Context) ([]entity.Faculty, error) {
+func (r *FacultyRepo) FindAll(ctx context.Context, page dto.Page) ([]entity.Faculty, error) {
 	var faculties []entity.Faculty
-	if err := r.WithContext(ctx).Find(&faculties).Error; err != nil {
+	if err := r.WithContext(ctx).Limit(page.Count).Offset((page.Page - 1) * page.Count).Preload("Departments.Employees.User").Preload("Departments.Groups.Students.User").Find(&faculties).Error; err != nil {
 		return nil, err
 	}
 	return faculties, nil
+}
+
+func (r *FacultyRepo) FindOneByID(ctx context.Context, id uuid.UUID) (*entity.Faculty, error) {
+	var faculty *entity.Faculty
+	if err := r.WithContext(ctx).Preload("Departments.Employees.User").Preload("Departments.Groups.Students.User").Where("id = ?", id).First(&faculty).Error; err != nil {
+		return nil, err
+	}
+	return faculty, nil
 }
 
 func (r *FacultyRepo) Update(ctx context.Context, data dto.UpdateFaculty) (*entity.Faculty, error) {

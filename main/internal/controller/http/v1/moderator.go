@@ -88,7 +88,12 @@ type findAllModeratorResponse struct {
 }
 
 func (r *moderatorRoute) findAll(c *gin.Context) {
-	moderators, err := r.u.FindAll(c.Request.Context(), entity.MODERATOR)
+	page, err := GetPage(c.Query("page"), c.Query("count"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+	moderators, err := r.u.FindAll(c.Request.Context(), entity.MODERATOR, page)
 	if err != nil {
 		internalServerError(c, err.Error())
 		return

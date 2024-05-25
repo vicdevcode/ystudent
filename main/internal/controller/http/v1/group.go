@@ -16,17 +16,19 @@ import (
 
 type groupRoute struct {
 	rmq *RabbitMQ
-	u   usecase.Group
+	ug  usecase.Group
+	ud  usecase.Department
 	l   *slog.Logger
 }
 
 func newGroup(
 	router *router,
 	rmq *RabbitMQ,
-	u usecase.Group,
+	ug usecase.Group,
+	ud usecase.Department,
 	l *slog.Logger,
 ) {
-	r := &groupRoute{rmq, u, l}
+	r := &groupRoute{rmq, ug, ud, l}
 	{
 		router.protected.POST("/group/", r.create)
 		router.protected.PUT("/group/:id", r.update)
@@ -49,7 +51,7 @@ func (r *groupRoute) create(c *gin.Context) {
 		return
 	}
 
-	group, err := r.u.Create(c.Request.Context(), body)
+	group, err := r.ug.Create(c.Request.Context(), body)
 	if err != nil {
 		r.l.Error(err.Error())
 		internalServerError(c, err.Error())
@@ -77,18 +79,40 @@ func (r *groupRoute) create(c *gin.Context) {
 }
 
 type findAllGroupResponse struct {
-	Groups []entity.Group `json:"groups"`
+	Groups []dto.FindAllGroupResponse `json:"groups"`
+	dto.Page
 }
 
 func (r *groupRoute) findAll(c *gin.Context) {
-	groups, err := r.u.FindAll(c.Request.Context())
+	page, err := GetPage(c.Query("page"), c.Query("count"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+	groups, err := r.ug.FindAll(c.Request.Context(), page)
 	if err != nil {
 		r.l.Error(err.Error())
 		internalServerError(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, findAllGroupResponse{Groups: groups})
+	var response []dto.FindAllGroupResponse
+	for _, group := range groups {
+		department, err := r.ud.FindOne(c.Request.Context(), entity.Department{
+			ID: *group.DepartmentID,
+		})
+		if err != nil {
+			r.l.Error(err.Error())
+			internalServerError(c, err.Error())
+			return
+		}
+		response = append(response, dto.FindAllGroupResponse{
+			Group:          &group,
+			DepartmentName: department.Name,
+		})
+	}
+
+	c.JSON(http.StatusOK, findAllGroupResponse{Groups: response, Page: page})
 }
 
 type updateCurator struct {
@@ -109,7 +133,7 @@ func (r *groupRoute) updateCurator(c *gin.Context) {
 		return
 	}
 
-	group, err := r.u.UpdateCurator(c.Request.Context(), dto.UpdateGroupCurator{
+	group, err := r.ug.UpdateCurator(c.Request.Context(), dto.UpdateGroupCurator{
 		ID:        id,
 		CuratorID: body.TeacherId,
 	})
@@ -170,7 +194,7 @@ func (r *groupRoute) update(c *gin.Context) {
 		data.DepartmentID = &body.DepartmentID
 	}
 
-	group, err := r.u.Update(c.Request.Context(), data)
+	group, err := r.ug.Update(c.Request.Context(), data)
 	if err != nil {
 		internalServerError(c, err.Error())
 		return
@@ -189,7 +213,7 @@ func (r *groupRoute) delete(c *gin.Context) {
 		badRequest(c, err.Error())
 		return
 	}
-	if err := r.u.Delete(c.Request.Context(), id); err != nil {
+	if err := r.ug.Delete(c.Request.Context(), id); err != nil {
 		internalServerError(c, err.Error())
 		return
 	}

@@ -32,9 +32,9 @@ func (r *DepartmentRepo) Create(
 	return department, nil
 }
 
-func (r *DepartmentRepo) FindAll(ctx context.Context) ([]entity.Department, error) {
+func (r *DepartmentRepo) FindAll(ctx context.Context, page dto.Page) ([]entity.Department, error) {
 	var departments []entity.Department
-	if err := r.WithContext(ctx).Preload("Employees.User").Preload("Groups.Students.User").Find(&departments).Error; err != nil {
+	if err := r.WithContext(ctx).Limit(page.Count).Offset((page.Page - 1) * page.Count).Preload("Employees.User").Preload("Groups.Students.User").Find(&departments).Error; err != nil {
 		return nil, err
 	}
 	return departments, nil

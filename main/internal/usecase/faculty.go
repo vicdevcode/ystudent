@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -35,14 +36,24 @@ func (uc *FacultyUseCase) Create(
 	return faculty, nil
 }
 
-func (uc *FacultyUseCase) FindAll(c context.Context) ([]entity.Faculty, error) {
+func (uc *FacultyUseCase) FindAll(c context.Context, page dto.Page) ([]entity.Faculty, error) {
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
-	faculties, err := uc.repo.FindAll(ctx)
+	faculties, err := uc.repo.FindAll(ctx, page)
 	if err != nil {
 		return nil, err
 	}
 	return faculties, nil
+}
+
+func (uc *FacultyUseCase) FindOne(c context.Context, data entity.Faculty) (*entity.Faculty, error) {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+
+	if uuid.Nil != data.ID {
+		return uc.repo.FindOneByID(ctx, data.ID)
+	}
+	return nil, errors.New("record not found")
 }
 
 func (uc *FacultyUseCase) Update(

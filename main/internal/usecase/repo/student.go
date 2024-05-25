@@ -35,9 +35,9 @@ func (r *StudentRepo) Create(ctx context.Context, data dto.CreateStudent) (*enti
 	return student, nil
 }
 
-func (r *StudentRepo) FindAll(ctx context.Context) ([]entity.Student, error) {
+func (r *StudentRepo) FindAll(ctx context.Context, page dto.Page) ([]entity.Student, error) {
 	var students []entity.Student
-	if err := r.WithContext(ctx).Preload("User").Find(&students).Error; err != nil {
+	if err := r.WithContext(ctx).Limit(page.Count).Offset((page.Page - 1) * page.Count).Preload("User").Find(&students).Error; err != nil {
 		return nil, err
 	}
 	return students, nil

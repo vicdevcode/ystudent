@@ -33,10 +33,10 @@ func (uc *GroupUseCase) Create(c context.Context, data dto.CreateGroup) (*entity
 	return group, nil
 }
 
-func (uc *GroupUseCase) FindAll(c context.Context) ([]entity.Group, error) {
+func (uc *GroupUseCase) FindAll(c context.Context, page dto.Page) ([]entity.Group, error) {
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
-	groups, err := uc.repo.FindAll(ctx)
+	groups, err := uc.repo.FindAll(ctx, page)
 	if err != nil {
 		return nil, err
 	}

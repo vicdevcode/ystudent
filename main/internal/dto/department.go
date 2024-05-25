@@ -1,10 +1,19 @@
 package dto
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+
+	"github.com/vicdevcode/ystudent/main/internal/entity"
+)
 
 type Department struct {
 	Name      string     `json:"name"       binding:"required"`
 	FacultyID *uuid.UUID `json:"faculty_id" binding:"required,uuid"`
+}
+
+type FindAllDepartmentResponse struct {
+	FacultyName string `json:"faculty_name"`
+	*entity.Department
 }
 
 type CreateDepartment Department

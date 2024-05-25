@@ -80,7 +80,12 @@ type findAllFacultyResponse struct {
 }
 
 func (r *facultyRoute) findAll(c *gin.Context) {
-	faculties, err := r.u.FindAll(c.Request.Context())
+	page, err := GetPage(c.Query("page"), c.Query("count"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+	faculties, err := r.u.FindAll(c.Request.Context(), page)
 	if err != nil {
 		r.l.Error(err.Error())
 		internalServerError(c, err.Error())

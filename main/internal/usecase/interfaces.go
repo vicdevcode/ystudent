@@ -13,12 +13,12 @@ type (
 	// User
 	User interface {
 		Create(context.Context, dto.CreateUser) (*entity.User, error)
-		FindAll(context.Context, entity.UserRole) ([]entity.User, error)
+		FindAll(context.Context, entity.UserRole, dto.Page) ([]entity.User, error)
 		FindOne(context.Context, entity.UserRole, entity.User) (*entity.User, error)
 	}
 	UserRepo interface {
 		Create(context.Context, dto.CreateUser) (*entity.User, error)
-		FindAll(context.Context, entity.UserRole) ([]entity.User, error)
+		FindAll(context.Context, entity.UserRole, dto.Page) ([]entity.User, error)
 		FindOneByID(context.Context, entity.UserRole, uuid.UUID) (*entity.User, error)
 		FindOneByEmail(context.Context, entity.UserRole, string) (*entity.User, error)
 		Delete(context.Context, string) error
@@ -26,49 +26,52 @@ type (
 	// Student
 	Student interface {
 		Create(context.Context, dto.CreateStudent) (*entity.Student, error)
-		FindAll(context.Context) ([]entity.Student, error)
+		FindAll(context.Context, dto.Page) ([]entity.Student, error)
 	}
 	StudentRepo interface {
 		Create(context.Context, dto.CreateStudent) (*entity.Student, error)
-		FindAll(context.Context) ([]entity.Student, error)
+		FindAll(context.Context, dto.Page) ([]entity.Student, error)
 	}
 	// Teacher
 	Teacher interface {
 		Create(context.Context, dto.CreateTeacher) (*entity.Teacher, error)
-		FindAll(context.Context) ([]entity.Teacher, error)
+		FindAll(context.Context, dto.Page) ([]entity.Teacher, error)
 	}
 	TeacherRepo interface {
 		Create(context.Context, dto.CreateTeacher) (*entity.Teacher, error)
-		FindAll(context.Context) ([]entity.Teacher, error)
+		FindAll(context.Context, dto.Page) ([]entity.Teacher, error)
 	}
 	// Employee
 	Employee interface {
 		Create(context.Context, dto.CreateEmployee) (*entity.Employee, error)
-		FindAll(context.Context) ([]entity.Employee, error)
+		FindAll(context.Context, dto.Page) ([]entity.Employee, error)
 		FindOne(context.Context, entity.Employee) (*entity.Employee, error)
 	}
 	EmployeeRepo interface {
 		Create(context.Context, dto.CreateEmployee) (*entity.Employee, error)
-		FindAll(context.Context) ([]entity.Employee, error)
+		FindAll(context.Context, dto.Page) ([]entity.Employee, error)
 		FindOneByID(context.Context, uuid.UUID) (*entity.Employee, error)
 	}
 	// Faculty
 	Faculty interface {
 		Create(context.Context, dto.CreateFaculty) (*entity.Faculty, error)
-		FindAll(context.Context) ([]entity.Faculty, error)
+		FindAll(context.Context, dto.Page) ([]entity.Faculty, error)
+		FindOne(context.Context, entity.Faculty) (*entity.Faculty, error)
 		Update(context.Context, dto.UpdateFaculty) (*entity.Faculty, error)
 		Delete(context.Context, uuid.UUID) error
 	}
 	FacultyRepo interface {
 		Create(context.Context, dto.CreateFaculty) (*entity.Faculty, error)
-		FindAll(context.Context) ([]entity.Faculty, error)
+		FindAll(context.Context, dto.Page) ([]entity.Faculty, error)
+		FindOneByID(context.Context, uuid.UUID) (*entity.Faculty, error)
 		Update(context.Context, dto.UpdateFaculty) (*entity.Faculty, error)
 		Delete(context.Context, uuid.UUID) error
 	}
 	// Department
 	Department interface {
 		Create(context.Context, dto.CreateDepartment) (*entity.Department, error)
-		FindAll(context.Context) ([]entity.Department, error)
+		FindAll(context.Context, dto.Page) ([]entity.Department, error)
+		FindOne(context.Context, entity.Department) (*entity.Department, error)
 		Update(context.Context, dto.UpdateDepartment) (*entity.Department, error)
 		Delete(context.Context, uuid.UUID) error
 		AddEmployee(context.Context, dto.AddEmployeeToDepartment) (*entity.Department, error)
@@ -79,7 +82,7 @@ type (
 	}
 	DepartmentRepo interface {
 		Create(context.Context, dto.CreateDepartment) (*entity.Department, error)
-		FindAll(context.Context) ([]entity.Department, error)
+		FindAll(context.Context, dto.Page) ([]entity.Department, error)
 		FindOneByID(context.Context, uuid.UUID) (*entity.Department, error)
 		Update(context.Context, dto.UpdateDepartment) (*entity.Department, error)
 		Delete(context.Context, uuid.UUID) error
@@ -94,7 +97,7 @@ type (
 	Group interface {
 		Create(context.Context, dto.CreateGroup) (*entity.Group, error)
 		FindOne(context.Context, entity.Group) (*entity.Group, error)
-		FindAll(context.Context) ([]entity.Group, error)
+		FindAll(context.Context, dto.Page) ([]entity.Group, error)
 		Update(context.Context, dto.UpdateGroup) (*entity.Group, error)
 		UpdateCurator(context.Context, dto.UpdateGroupCurator) (*entity.Group, error)
 		Delete(context.Context, uuid.UUID) error
@@ -103,7 +106,7 @@ type (
 		Create(context.Context, dto.CreateGroup) (*entity.Group, error)
 		FindOneByID(context.Context, uuid.UUID) (*entity.Group, error)
 		FindOneByName(context.Context, string) (*entity.Group, error)
-		FindAll(context.Context) ([]entity.Group, error)
+		FindAll(context.Context, dto.Page) ([]entity.Group, error)
 		Update(context.Context, dto.UpdateGroup) (*entity.Group, error)
 		UpdateCurator(context.Context, dto.UpdateGroupCurator) (*entity.Group, error)
 		Delete(context.Context, uuid.UUID) error

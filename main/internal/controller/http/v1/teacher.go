@@ -95,7 +95,12 @@ type findAllTeacherResponse struct {
 }
 
 func (r *teacherRoute) findAll(c *gin.Context) {
-	teachers, err := r.ut.FindAll(c.Request.Context())
+	page, err := GetPage(c.Query("page"), c.Query("count"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+	teachers, err := r.ut.FindAll(c.Request.Context(), page)
 	if err != nil {
 		internalServerError(c, err.Error())
 		return

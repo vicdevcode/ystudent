@@ -32,9 +32,9 @@ func (uc *TeacherUseCase) Create(
 	return uc.teacherRepo.Create(ctx, data)
 }
 
-func (uc *TeacherUseCase) FindAll(c context.Context) ([]entity.Teacher, error) {
+func (uc *TeacherUseCase) FindAll(c context.Context, page dto.Page) ([]entity.Teacher, error) {
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
 
-	return uc.teacherRepo.FindAll(ctx)
+	return uc.teacherRepo.FindAll(ctx, page)
 }

@@ -16,17 +16,19 @@ import (
 
 type departmentRoute struct {
 	rmq *RabbitMQ
-	u   usecase.Department
+	ud  usecase.Department
+	uf  usecase.Faculty
 	l   *slog.Logger
 }
 
 func newDepartment(
 	router *router,
 	rmq *RabbitMQ,
-	u usecase.Department,
+	ud usecase.Department,
+	uf usecase.Faculty,
 	l *slog.Logger,
 ) {
-	r := &departmentRoute{rmq, u, l}
+	r := &departmentRoute{rmq, ud, uf, l}
 	{
 		router.protected.POST("/department/", r.create)
 		router.protected.PUT("/department/:id", r.update)
@@ -49,7 +51,7 @@ func (r *departmentRoute) create(c *gin.Context) {
 		return
 	}
 
-	department, err := r.u.Create(c.Request.Context(), dto.CreateDepartment(body))
+	department, err := r.ud.Create(c.Request.Context(), dto.CreateDepartment(body))
 	if err != nil {
 		r.l.Error(err.Error())
 		internalServerError(c, err.Error())
@@ -77,18 +79,41 @@ func (r *departmentRoute) create(c *gin.Context) {
 }
 
 type findAllDepartmentResponse struct {
-	Departments []entity.Department `json:"departments"`
+	Departments []dto.FindAllDepartmentResponse `json:"departments"`
+	dto.Page
 }
 
 func (r *departmentRoute) findAll(c *gin.Context) {
-	departments, err := r.u.FindAll(c.Request.Context())
+	page, err := GetPage(c.Query("page"), c.Query("count"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+
+	departments, err := r.ud.FindAll(c.Request.Context(), page)
 	if err != nil {
 		r.l.Error(err.Error())
 		internalServerError(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, findAllDepartmentResponse{Departments: departments})
+	var response []dto.FindAllDepartmentResponse
+	for _, department := range departments {
+		faculty, err := r.uf.FindOne(c.Request.Context(), entity.Faculty{
+			ID: *department.FacultyID,
+		})
+		if err != nil {
+			r.l.Error(err.Error())
+			internalServerError(c, err.Error())
+			return
+		}
+		response = append(response, dto.FindAllDepartmentResponse{
+			Department:  &department,
+			FacultyName: faculty.Name,
+		})
+	}
+
+	c.JSON(http.StatusOK, findAllDepartmentResponse{Departments: response, Page: page})
 }
 
 type updateDepartmentRequest dto.UpdateDepartmentBody
@@ -111,7 +136,7 @@ func (r *departmentRoute) update(c *gin.Context) {
 
 	r.l.Info("", slog.Any("", body))
 
-	department, err := r.u.Update(c.Request.Context(), dto.UpdateDepartment{
+	department, err := r.ud.Update(c.Request.Context(), dto.UpdateDepartment{
 		ID:        id,
 		Name:      body.Name,
 		FacultyID: body.FacultyID,
@@ -134,7 +159,7 @@ func (r *departmentRoute) delete(c *gin.Context) {
 		badRequest(c, err.Error())
 		return
 	}
-	if err := r.u.Delete(c.Request.Context(), id); err != nil {
+	if err := r.ud.Delete(c.Request.Context(), id); err != nil {
 		internalServerError(c, err.Error())
 		return
 	}
@@ -156,7 +181,7 @@ func (r *departmentRoute) addEmployee(c *gin.Context) {
 		return
 	}
 
-	department, err := r.u.AddEmployee(c.Request.Context(), dto.AddEmployeeToDepartment(body))
+	department, err := r.ud.AddEmployee(c.Request.Context(), dto.AddEmployeeToDepartment(body))
 	if err != nil {
 		internalServerError(c, err.Error())
 		return
@@ -195,7 +220,7 @@ func (r *departmentRoute) deleteEmployee(c *gin.Context) {
 		return
 	}
 
-	department, err := r.u.DeleteEmployee(
+	department, err := r.ud.DeleteEmployee(
 		c.Request.Context(),
 		dto.DeleteEmployeeFromDepartment(body),
 	)

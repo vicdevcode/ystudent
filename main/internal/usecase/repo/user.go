@@ -36,9 +36,13 @@ func (r *UserRepo) Create(ctx context.Context, data dto.CreateUser) (*entity.Use
 
 // Select
 
-func (r *UserRepo) FindAll(ctx context.Context, roleType entity.UserRole) ([]entity.User, error) {
+func (r *UserRepo) FindAll(
+	ctx context.Context,
+	roleType entity.UserRole,
+	page dto.Page,
+) ([]entity.User, error) {
 	var users []entity.User
-	if err := r.WithContext(ctx).Where("role_type = ?", roleType).Find(&users).Error; err != nil {
+	if err := r.WithContext(ctx).Limit(page.Count).Offset((page.Page-1)*page.Count).Where("role_type = ?", roleType).Find(&users).Error; err != nil {
 		return nil, err
 	}
 	return users, nil

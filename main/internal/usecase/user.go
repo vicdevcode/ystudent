@@ -33,10 +33,14 @@ func (uc *UserUseCase) Create(c context.Context, data dto.CreateUser) (*entity.U
 	return user, nil
 }
 
-func (uc *UserUseCase) FindAll(c context.Context, role entity.UserRole) ([]entity.User, error) {
+func (uc *UserUseCase) FindAll(
+	c context.Context,
+	role entity.UserRole,
+	page dto.Page,
+) ([]entity.User, error) {
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
-	users, err := uc.repo.FindAll(ctx, role)
+	users, err := uc.repo.FindAll(ctx, role, page)
 	if err != nil {
 		return nil, err
 	}

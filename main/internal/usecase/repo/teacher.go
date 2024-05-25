@@ -34,9 +34,9 @@ func (r *TeacherRepo) Create(ctx context.Context, data dto.CreateTeacher) (*enti
 	return teacher, nil
 }
 
-func (r *TeacherRepo) FindAll(ctx context.Context) ([]entity.Teacher, error) {
+func (r *TeacherRepo) FindAll(ctx context.Context, page dto.Page) ([]entity.Teacher, error) {
 	var teachers []entity.Teacher
-	if err := r.WithContext(ctx).Preload("User").Find(&teachers).Error; err != nil {
+	if err := r.WithContext(ctx).Limit(page.Count).Offset((page.Page - 1) * page.Count).Preload("User").Find(&teachers).Error; err != nil {
 		return nil, err
 	}
 	return teachers, nil

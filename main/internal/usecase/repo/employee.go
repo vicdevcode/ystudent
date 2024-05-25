@@ -36,10 +36,10 @@ func (r *EmployeeRepo) Create(
 	return employee, nil
 }
 
-func (r *EmployeeRepo) FindAll(ctx context.Context) ([]entity.Employee, error) {
+func (r *EmployeeRepo) FindAll(ctx context.Context, page dto.Page) ([]entity.Employee, error) {
 	var employees []entity.Employee
 
-	if err := r.WithContext(ctx).Preload("User").Find(&employees).Error; err != nil {
+	if err := r.WithContext(ctx).Limit(page.Count).Offset((page.Page - 1) * page.Count).Preload("User").Find(&employees).Error; err != nil {
 		return nil, err
 	}
 	return employees, nil

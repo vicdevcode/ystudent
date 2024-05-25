@@ -84,7 +84,12 @@ type findAllEmployeeResponse struct {
 }
 
 func (r *employeeRoute) findAll(c *gin.Context) {
-	employees, err := r.u.FindAll(c.Request.Context())
+	page, err := GetPage(c.Query("page"), c.Query("count"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+	employees, err := r.u.FindAll(c.Request.Context(), page)
 	if err != nil {
 		internalServerError(c, err.Error())
 		return

@@ -33,11 +33,11 @@ func (uc *EmployeeUseCase) Create(
 	return uc.repo.Create(ctx, data)
 }
 
-func (uc *EmployeeUseCase) FindAll(c context.Context) ([]entity.Employee, error) {
+func (uc *EmployeeUseCase) FindAll(c context.Context, page dto.Page) ([]entity.Employee, error) {
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
 
-	return uc.repo.FindAll(ctx)
+	return uc.repo.FindAll(ctx, page)
 }
 
 func (uc *EmployeeUseCase) FindOne(

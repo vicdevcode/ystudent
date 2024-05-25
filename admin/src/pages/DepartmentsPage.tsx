@@ -63,7 +63,7 @@ const DepartmentPage = () => {
             data.push({
               id: json["departments"][i]["id"],
               name: json["departments"][i]["name"],
-              faculty_name: "IMI",
+              faculty_name: json["departments"][i]["faculty_name"],
             });
           }
           setDepartments(data);
@@ -108,7 +108,7 @@ const AddDepartment = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (token)
-      return fetch(import.meta.env.VITE_MAIN_API + "/faculty/", {
+      return fetch(import.meta.env.VITE_MAIN_API + "/department/", {
         method: "POST",
         headers: {
           Authorization: "Bearer " + token,
@@ -120,7 +120,7 @@ const AddDepartment = () => {
         if (res.status === 200) {
           toast({
             title: "OK",
-            content: "Факультет был создан",
+            content: "Кафедра была создана",
           });
         } else {
           toast({

@@ -1,6 +1,10 @@
 package dto
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+
+	"github.com/vicdevcode/ystudent/main/internal/entity"
+)
 
 type Group struct {
 	Name         string `json:"name"          binding:"required"`
@@ -8,6 +12,11 @@ type Group struct {
 }
 
 type CreateGroup Group
+
+type FindAllGroupResponse struct {
+	DepartmentName string `json:"department_name"`
+	*entity.Group
+}
 
 type UpdateGroupBody struct {
 	Name         string    `json:"name"          binding:"omitempty"`

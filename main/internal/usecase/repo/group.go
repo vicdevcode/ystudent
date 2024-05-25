@@ -31,9 +31,9 @@ func (r *GroupRepo) Create(ctx context.Context, data dto.CreateGroup) (*entity.G
 	return group, nil
 }
 
-func (r *GroupRepo) FindAll(ctx context.Context) ([]entity.Group, error) {
+func (r *GroupRepo) FindAll(ctx context.Context, page dto.Page) ([]entity.Group, error) {
 	var groups []entity.Group
-	if err := r.WithContext(ctx).Preload("Students.User").Find(&groups).Error; err != nil {
+	if err := r.WithContext(ctx).Limit(page.Count).Offset((page.Page - 1) * page.Count).Preload("Students.User").Find(&groups).Error; err != nil {
 		return nil, err
 	}
 	return groups, nil
