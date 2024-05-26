@@ -53,3 +53,13 @@ func (uc *EmployeeUseCase) FindOne(
 
 	return nil, errors.New("record not found")
 }
+
+func (uc *EmployeeUseCase) Delete(
+	c context.Context,
+	id uuid.UUID,
+) error {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+
+	return uc.repo.Delete(ctx, id)
+}

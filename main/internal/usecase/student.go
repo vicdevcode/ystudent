@@ -54,3 +54,23 @@ func (uc *StudentUseCase) FindOne(
 	}
 	return nil, errors.New("record not found")
 }
+
+func (uc *StudentUseCase) Update(
+	c context.Context,
+	data dto.UpdateStudent,
+) (*entity.Student, error) {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+
+	return uc.studentRepo.Update(ctx, data)
+}
+
+func (uc *StudentUseCase) Delete(
+	c context.Context,
+	id uuid.UUID,
+) error {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+
+	return uc.studentRepo.Delete(ctx, id)
+}

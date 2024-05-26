@@ -14,13 +14,15 @@ import (
 type TeacherUseCase struct {
 	teacherRepo TeacherRepo
 	userRepo    UserRepo
+	groupRepo   GroupRepo
 	ctxTimeout  time.Duration
 }
 
-func newTeacher(tr TeacherRepo, ur UserRepo, t time.Duration) *TeacherUseCase {
+func newTeacher(tr TeacherRepo, ur UserRepo, gr GroupRepo, t time.Duration) *TeacherUseCase {
 	return &TeacherUseCase{
 		teacherRepo: tr,
 		userRepo:    ur,
+		groupRepo:   gr,
 		ctxTimeout:  t,
 	}
 }
@@ -53,4 +55,44 @@ func (uc *TeacherUseCase) FindOne(
 		return uc.teacherRepo.FindOneByID(ctx, data.ID)
 	}
 	return nil, errors.New("record not found")
+}
+
+func (uc *TeacherUseCase) Delete(
+	c context.Context,
+	id uuid.UUID,
+) error {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+
+	return uc.teacherRepo.Delete(ctx, id)
+}
+
+func (uc *TeacherUseCase) AddGroup(
+	c context.Context,
+	data dto.AddGroupToTeacher,
+) (*entity.Teacher, error) {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+
+	return uc.teacherRepo.AddGroup(ctx, data)
+}
+
+func (uc *TeacherUseCase) DeleteGroup(
+	c context.Context,
+	data dto.DeleteGroupFromTeacher,
+) (*entity.Teacher, error) {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+
+	group, err := uc.groupRepo.FindOneByID(ctx, data.GroupID)
+	if err != nil {
+		return nil, err
+	}
+
+	teacher, err := uc.teacherRepo.FindOneByID(ctx, data.TeacherID)
+	if err != nil {
+		return nil, err
+	}
+
+	return uc.teacherRepo.DeleteGroup(ctx, teacher, group)
 }

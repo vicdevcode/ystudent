@@ -211,9 +211,11 @@ func (r *groupRoute) update(c *gin.Context) {
 	}
 	if body.Name != "" {
 		data.Name = body.Name
-	} else if body.CuratorID != uuid.Nil {
+	}
+	if body.CuratorID != uuid.Nil {
 		data.CuratorID = &body.CuratorID
-	} else if body.DepartmentID != uuid.Nil {
+	}
+	if body.DepartmentID != uuid.Nil {
 		data.DepartmentID = &body.DepartmentID
 	}
 

@@ -62,3 +62,23 @@ func (uc *UserUseCase) FindOne(
 	}
 	return nil, errors.New("record not found")
 }
+
+func (uc *UserUseCase) Update(
+	c context.Context,
+	data dto.UpdateUser,
+) (*entity.User, error) {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+
+	return uc.repo.Update(ctx, data)
+}
+
+func (uc *UserUseCase) Delete(
+	c context.Context,
+	id uuid.UUID,
+) error {
+	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
+	defer cancel()
+
+	return uc.repo.Delete(ctx, id)
+}

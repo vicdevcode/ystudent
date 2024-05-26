@@ -2,9 +2,10 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Root } from "./pages/Root";
 import { DashboardPage } from "./pages/DashboardPage";
 import { AuthPage } from "./pages/AuthPage";
-import { FacultiesPage } from "./pages/FacultiesPage";
+import FacultiesPage from "./pages/FacultiesPage";
 import DepartmentPage from "./pages/DepartmentsPage";
 import GroupsPage from "./pages/GroupsPage";
+import TeachersPage from "./pages/TeachersPage";
 
 const router = createBrowserRouter([
   {
@@ -29,7 +30,7 @@ const router = createBrowserRouter([
       },
       {
         path: "teachers",
-        element: <DashboardPage />,
+        element: <TeachersPage />,
       },
       {
         path: "auth",

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/sethvargo/go-password/password"
 
@@ -97,5 +98,21 @@ func (r *employeeRoute) findAll(c *gin.Context) {
 
 	c.JSON(http.StatusOK, findAllEmployeeResponse{
 		Employees: employees,
+	})
+}
+
+func (r *employeeRoute) delete(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+	if err := r.u.Delete(c.Request.Context(), id); err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, deleteGroupResponse{
+		Message: "moderator was deleted",
 	})
 }

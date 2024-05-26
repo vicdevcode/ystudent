@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/sethvargo/go-password/password"
 
@@ -24,6 +25,7 @@ func newModerator(router *router, rmq *RabbitMQ, u usecase.User, l *slog.Logger)
 	r := &moderatorRoute{rmq, u, l}
 	{
 		router.protected.POST("/moderator/", r.create)
+		router.protected.DELETE("/moderator/:id", r.delete)
 		router.protected.GET("/moderators/", r.findAll)
 	}
 }
@@ -100,4 +102,20 @@ func (r *moderatorRoute) findAll(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, findAllModeratorResponse{Moderators: moderators})
+}
+
+func (r *moderatorRoute) delete(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+	if err := r.u.Delete(c.Request.Context(), id); err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, deleteGroupResponse{
+		Message: "moderator was deleted",
+	})
 }

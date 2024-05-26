@@ -52,3 +52,15 @@ func (r *StudentRepo) FindOneByID(ctx context.Context, id uuid.UUID) (*entity.St
 	}
 	return student, nil
 }
+
+func (r *StudentRepo) Update(ctx context.Context, data dto.UpdateStudent) (*entity.Student, error) {
+	student := &entity.Student{ID: data.ID}
+	if err := r.WithContext(ctx).Model(&student).Updates(entity.Student{GroupID: data.GroupID}).Error; err != nil {
+		return nil, err
+	}
+	return student, nil
+}
+
+func (r *StudentRepo) Delete(ctx context.Context, id uuid.UUID) error {
+	return r.WithContext(ctx).Unscoped().Delete(&entity.Student{ID: id}).Error
+}

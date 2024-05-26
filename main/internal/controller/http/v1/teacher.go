@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/sethvargo/go-password/password"
 
@@ -30,7 +31,9 @@ func newTeacher(
 ) {
 	r := &teacherRoute{rmq, ut, uu, l}
 	{
-		router.protected.POST("/teacher/", r.createTeacher)
+		router.protected.POST("/teacher/", r.create)
+		router.protected.PUT("/teacher/:id", r.update)
+		router.protected.DELETE("/teacher/:id", r.delete)
 		router.public.GET("/teachers/", r.findAll)
 	}
 }
@@ -41,7 +44,7 @@ type createTeacherRequest dto.CreateTeacher
 
 type createTeacherResponse dto.TeacherResponse
 
-func (r *teacherRoute) createTeacher(c *gin.Context) {
+func (r *teacherRoute) create(c *gin.Context) {
 	var body createTeacherRequest
 
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -107,4 +110,78 @@ func (r *teacherRoute) findAll(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, findAllTeacherResponse{Teachers: teachers})
+}
+
+type updateTeacherRequest dto.UpdateTeacherBody
+
+type updateTeacherResponse *entity.Teacher
+
+func (r *teacherRoute) update(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+
+	var body updateTeacherRequest
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+
+	teacher, err := r.ut.FindOne(c.Request.Context(), entity.Teacher{
+		ID: id,
+	})
+	if err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	data := dto.UpdateUser{
+		ID: teacher.User.ID,
+	}
+	if body.Firstname != "" {
+		data.Firstname = body.Firstname
+	}
+	if body.Surname != "" {
+		data.Surname = body.Surname
+	}
+	if body.Middlename != "" {
+		data.Middlename = body.Middlename
+	}
+	if body.Email != "" {
+		data.Email = body.Email
+	}
+
+	_, err = r.uu.Update(c.Request.Context(), data)
+	if err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+	teacher, err = r.ut.FindOne(c.Request.Context(), entity.Teacher{
+		ID: id,
+	})
+	if err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, updateTeacherResponse(teacher))
+}
+
+func (r *teacherRoute) delete(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+	if err := r.ut.Delete(c.Request.Context(), id); err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, deleteGroupResponse{
+		Message: "teacher was deleted",
+	})
 }

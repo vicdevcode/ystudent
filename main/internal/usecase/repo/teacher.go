@@ -38,7 +38,7 @@ func (r *TeacherRepo) Create(ctx context.Context, data dto.CreateTeacher) (*enti
 
 func (r *TeacherRepo) FindAll(ctx context.Context, page dto.Page) ([]entity.Teacher, error) {
 	var teachers []entity.Teacher
-	if err := r.WithContext(ctx).Limit(page.Count).Offset((page.Page - 1) * page.Count).Preload("User").Find(&teachers).Error; err != nil {
+	if err := r.WithContext(ctx).Limit(page.Count).Offset((page.Page - 1) * page.Count).Preload("User").Preload("Groups").Find(&teachers).Error; err != nil {
 		return nil, err
 	}
 	return teachers, nil
@@ -49,5 +49,44 @@ func (r *TeacherRepo) FindOneByID(ctx context.Context, id uuid.UUID) (*entity.Te
 	if err := r.WithContext(ctx).Preload("User").Where("id = ?", id).First(&teacher).Error; err != nil {
 		return nil, err
 	}
+	return teacher, nil
+}
+
+func (r *TeacherRepo) Delete(ctx context.Context, id uuid.UUID) error {
+	return r.WithContext(ctx).Unscoped().Delete(&entity.Teacher{ID: id}).Error
+}
+
+func (r *TeacherRepo) AddGroup(
+	ctx context.Context,
+	data dto.AddGroupToTeacher,
+) (*entity.Teacher, error) {
+	teacher := &entity.Teacher{
+		ID: data.TeacherID,
+	}
+	if err := r.WithContext(ctx).Model(&teacher).Association("Groups").Append(&entity.Teacher{
+		ID: data.GroupID,
+	}); err != nil {
+		return nil, err
+	}
+
+	var err error
+
+	teacher, err = r.FindOneByID(ctx, data.TeacherID)
+	if err != nil {
+		return nil, err
+	}
+
+	return teacher, nil
+}
+
+func (r *TeacherRepo) DeleteGroup(
+	ctx context.Context,
+	teacher *entity.Teacher,
+	group *entity.Group,
+) (*entity.Teacher, error) {
+	if err := r.WithContext(ctx).Model(&teacher).Association("Groups").Delete(&group); err != nil {
+		return nil, err
+	}
+
 	return teacher, nil
 }

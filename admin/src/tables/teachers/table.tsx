@@ -1,6 +1,5 @@
 import {
   ColumnDef,
-  VisibilityState,
   flexRender,
   getCoreRowModel,
   useReactTable,
@@ -14,35 +13,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useState } from "react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-const setWidthColumns = (id: string, size: string | number) => {
-  if (id === "actions") return { width: `${size}px`, textAlign: "center" };
-  if (id === "id") return { width: `${size}px` };
-  return {};
-};
-
-export function GroupsTable<TData, TValue>({
+export function TeachersTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [columnVisibility] = useState<VisibilityState>({
-    department_id: false,
-    curator_id: false,
-  });
-
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    state: {
-      columnVisibility,
-    },
   });
 
   return (
@@ -74,13 +58,7 @@ export function GroupsTable<TData, TValue>({
                 data-state={row.getIsSelected() && "selected"}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    style={setWidthColumns(
-                      cell.column.id,
-                      cell.column.getSize(),
-                    )}
-                  >
+                  <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}

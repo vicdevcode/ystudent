@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/sethvargo/go-password/password"
 
@@ -30,7 +31,9 @@ func newStudent(
 ) {
 	r := &studentRoute{rmq, us, uu, l}
 	{
-		router.protected.POST("/student/", r.createStudent)
+		router.protected.POST("/student/", r.create)
+		router.protected.PUT("/student/:id", r.update)
+		router.protected.DELETE("/student/:id", r.delete)
 		router.public.GET("/students/", r.findAll)
 	}
 }
@@ -40,7 +43,7 @@ type createStudentRequest dto.CreateStudent
 
 type createStudentResponse dto.StudentResponse
 
-func (r *studentRoute) createStudent(c *gin.Context) {
+func (r *studentRoute) create(c *gin.Context) {
 	var body dto.CreateStudent
 
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -109,4 +112,89 @@ func (r *studentRoute) findAll(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, findAllStudentUserResponse{Students: students})
+}
+
+type updateStudentRequest dto.UpdateStudentBody
+
+type updateStudentResponse *entity.Student
+
+func (r *studentRoute) update(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+
+	var body updateStudentRequest
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+
+	student, err := r.us.FindOne(c.Request.Context(), entity.Student{
+		ID: id,
+	})
+	if err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	data := dto.UpdateUser{
+		ID: student.User.ID,
+	}
+	if body.Firstname != "" {
+		data.Firstname = body.Firstname
+	}
+	if body.Surname != "" {
+		data.Surname = body.Surname
+	}
+	if body.Middlename != "" {
+		data.Middlename = body.Middlename
+	}
+	if body.Email != "" {
+		data.Email = body.Email
+	}
+
+	_, err = r.uu.Update(c.Request.Context(), data)
+	if err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	if body.GroupID != uuid.Nil {
+		_, err := r.us.Update(c.Request.Context(), dto.UpdateStudent{
+			GroupID: body.GroupID,
+		})
+		if err != nil {
+			internalServerError(c, err.Error())
+			return
+		}
+	}
+
+	student, err = r.us.FindOne(c.Request.Context(), entity.Student{
+		ID: id,
+	})
+	if err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, updateStudentResponse(student))
+}
+
+func (r *studentRoute) delete(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		badRequest(c, err.Error())
+		return
+	}
+	if err := r.us.Delete(c.Request.Context(), id); err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, deleteGroupResponse{
+		Message: "student was deleted",
+	})
 }

@@ -15,6 +15,23 @@ type Student struct {
 
 type CreateStudent Student
 
+type UpdateStudent struct {
+	ID         uuid.UUID `json:"id"         binding:"required,uuid"`
+	Firstname  string    `json:"firstname"  binding:"omitempty,alphaunicode"`
+	Middlename string    `json:"middlename" binding:"omitempty,alphaunicode"`
+	Surname    string    `json:"surname"    binding:"omitempty,alphaunicode"`
+	Email      string    `json:"email"      binding:"omitempty,email"`
+	GroupID    uuid.UUID `json:"group_id"   binding:"omitempty,uuid"`
+}
+
+type UpdateStudentBody struct {
+	Firstname  string    `json:"firstname"  binding:"omitempty,alphaunicode"`
+	Middlename string    `json:"middlename" binding:"omitempty,alphaunicode"`
+	Surname    string    `json:"surname"    binding:"omitempty,alphaunicode"`
+	Email      string    `json:"email"      binding:"omitempty,email"`
+	GroupID    uuid.UUID `json:"group_id"   binding:"omitempty,uuid"`
+}
+
 type StudentResponse struct {
 	*entity.Student
 	Password string `json:"password"`

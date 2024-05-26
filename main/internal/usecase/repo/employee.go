@@ -54,3 +54,7 @@ func (r *EmployeeRepo) FindOneByID(ctx context.Context, id uuid.UUID) (*entity.E
 
 	return employee, nil
 }
+
+func (r *EmployeeRepo) Delete(ctx context.Context, id uuid.UUID) error {
+	return r.WithContext(ctx).Unscoped().Delete(&entity.Employee{ID: id}).Error
+}

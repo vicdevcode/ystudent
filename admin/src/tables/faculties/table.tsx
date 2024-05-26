@@ -19,6 +19,12 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
 }
 
+const setWidthColumns = (id: string, size: string | number) => {
+  if (id === "actions") return { width: `${size}px`, textAlign: "center" };
+  if (id === "id") return { width: `${size}px` };
+  return {};
+};
+
 export function FacultiesTable<TData, TValue>({
   columns,
   data,
@@ -27,6 +33,7 @@ export function FacultiesTable<TData, TValue>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    columnResizeMode: "onChange",
   });
 
   return (
@@ -58,7 +65,13 @@ export function FacultiesTable<TData, TValue>({
                 data-state={row.getIsSelected() && "selected"}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
+                  <TableCell
+                    key={cell.id}
+                    style={setWidthColumns(
+                      cell.column.id,
+                      cell.column.getSize(),
+                    )}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}

@@ -76,8 +76,16 @@ func (r *UserRepo) FindOneByEmail(
 
 // Delete
 
-func (r *UserRepo) Delete(ctx context.Context, id string) error {
-	return nil
+func (r *UserRepo) Delete(ctx context.Context, id uuid.UUID) error {
+	return r.WithContext(ctx).Unscoped().Delete(&entity.User{ID: id}).Error
 }
 
 // Update
+
+func (r *UserRepo) Update(ctx context.Context, data dto.UpdateUser) (*entity.User, error) {
+	user := &entity.User{ID: data.ID}
+	if err := r.WithContext(ctx).Model(&user).Updates(entity.User{Firstname: data.Firstname, Surname: data.Surname, Middlename: data.Middlename, Email: data.Email}).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+}
