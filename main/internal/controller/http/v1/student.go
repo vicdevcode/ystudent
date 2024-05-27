@@ -19,6 +19,7 @@ type studentRoute struct {
 	rmq *RabbitMQ
 	us  usecase.Student
 	uu  usecase.User
+	ug  usecase.Group
 	l   *slog.Logger
 }
 
@@ -27,9 +28,10 @@ func newStudent(
 	rmq *RabbitMQ,
 	us usecase.Student,
 	uu usecase.User,
+	ug usecase.Group,
 	l *slog.Logger,
 ) {
-	r := &studentRoute{rmq, us, uu, l}
+	r := &studentRoute{rmq, us, uu, ug, l}
 	{
 		router.protected.POST("/student/", r.create)
 		router.protected.PUT("/student/:id", r.update)
@@ -94,8 +96,14 @@ func (r *studentRoute) create(c *gin.Context) {
 
 // FindAll
 
+type findAllStudent struct {
+	*entity.Student
+	GroupName string `json:"group_name"`
+}
+
 type findAllStudentUserResponse struct {
-	Students []entity.Student `json:"students"`
+	Students []findAllStudent `json:"students"`
+	dto.Page
 }
 
 func (r *studentRoute) findAll(c *gin.Context) {
@@ -111,7 +119,23 @@ func (r *studentRoute) findAll(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, findAllStudentUserResponse{Students: students})
+	var response []findAllStudent
+	for _, student := range students {
+		group, err := r.ug.FindOne(c.Request.Context(), entity.Group{
+			ID: student.GroupID,
+		})
+		if err != nil {
+			r.l.Error(err.Error())
+			internalServerError(c, err.Error())
+			return
+		}
+		response = append(response, findAllStudent{
+			Student:   &student,
+			GroupName: group.Name,
+		})
+	}
+
+	c.JSON(http.StatusOK, findAllStudentUserResponse{Students: response, Page: page})
 }
 
 type updateStudentRequest dto.UpdateStudentBody
