@@ -2,7 +2,7 @@ import amqplib from "amqplib/callback_api";
 import { amqpConfig } from "../../../config";
 import { prisma } from "../../../prisma";
 
-export const AuthGroupCuratorUpdated = async (
+export const MainGroupCuratorUpdated = async (
   ch: amqplib.Channel,
   msg: amqplib.Message,
 ) => {

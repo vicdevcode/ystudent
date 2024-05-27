@@ -225,7 +225,26 @@ func (r *groupRoute) update(c *gin.Context) {
 		return
 	}
 
+	group, err = r.ug.FindOne(c.Request.Context(), entity.Group{ID: id})
+
+	response, err := json.Marshal(group)
+	if err != nil {
+		return
+	}
+
 	c.JSON(http.StatusOK, updateGroupResponse(group))
+
+	r.rmq.ch.PublishWithContext(
+		c.Request.Context(),
+		r.rmq.exchange,
+		"main.group.updated",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        response,
+		},
+	)
 }
 
 type deleteGroupResponse struct {
@@ -243,7 +262,24 @@ func (r *groupRoute) delete(c *gin.Context) {
 		return
 	}
 
+	response, err := json.Marshal(dto.Deleted{ID: id})
+	if err != nil {
+		return
+	}
+
 	c.JSON(http.StatusOK, deleteGroupResponse{
 		Message: "group was deleted",
 	})
+
+	r.rmq.ch.PublishWithContext(
+		c.Request.Context(),
+		r.rmq.exchange,
+		"main.group.deleted",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        response,
+		},
+	)
 }

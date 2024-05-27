@@ -123,7 +123,30 @@ func (r *facultyRoute) update(c *gin.Context) {
 		return
 	}
 
+	faculty, err = r.u.FindOne(c.Request.Context(), entity.Faculty{ID: id})
+	if err != nil {
+		internalServerError(c, err.Error())
+		return
+	}
+
+	response, err := json.Marshal(faculty)
+	if err != nil {
+		return
+	}
+
 	c.JSON(http.StatusOK, updateFacultyResponse(faculty))
+
+	r.rmq.ch.PublishWithContext(
+		c.Request.Context(),
+		r.rmq.exchange,
+		"main.faculty.updated",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        response,
+		},
+	)
 }
 
 type deleteFacultyResponse struct {
@@ -141,7 +164,24 @@ func (r *facultyRoute) delete(c *gin.Context) {
 		return
 	}
 
+	response, err := json.Marshal(dto.Deleted{ID: id})
+	if err != nil {
+		return
+	}
+
 	c.JSON(http.StatusOK, deleteFacultyResponse{
 		Message: "faculty was deleted",
 	})
+
+	r.rmq.ch.PublishWithContext(
+		c.Request.Context(),
+		r.rmq.exchange,
+		"main.faculty.deleted",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        response,
+		},
+	)
 }

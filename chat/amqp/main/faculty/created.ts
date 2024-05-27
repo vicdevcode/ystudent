@@ -2,22 +2,22 @@ import amqplib from "amqplib/callback_api";
 import { amqpConfig } from "../../../config";
 import { prisma } from "../../../prisma";
 
-export const AuthFacultyCreated = async (
+export const MainFacultyCreated = async (
   ch: amqplib.Channel,
   msg: amqplib.Message,
 ) => {
   try {
-    const facultyData = JSON.parse(msg.content.toString());
-    const faculty = await prisma.faculty.create({
+    const data = JSON.parse(msg.content.toString());
+    const response = await prisma.faculty.create({
       data: {
-        id: facultyData["id"],
-        name: facultyData["name"],
+        id: data["id"],
+        name: data["name"],
       },
     });
     ch.publish(
       amqpConfig.exchange,
       `${amqpConfig.queue_name}.faculty.created`,
-      Buffer.from(JSON.stringify(faculty)),
+      Buffer.from(JSON.stringify(response)),
     );
     ch.ack(msg);
     console.log("faculty was created");

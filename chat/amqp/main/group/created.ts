@@ -2,20 +2,24 @@ import amqplib from "amqplib/callback_api";
 import { amqpConfig } from "../../../config";
 import { prisma } from "../../../prisma";
 
-export const AuthGroupCreated = async (
+export const MainGroupCreated = async (
   ch: amqplib.Channel,
   msg: amqplib.Message,
 ) => {
   try {
-    const groupData = JSON.parse(msg.content.toString());
-    console.log(groupData);
-    const group = await prisma.group.create({
+    const data = JSON.parse(msg.content.toString());
+    const response = await prisma.group.create({
       data: {
-        id: groupData["id"],
-        name: groupData["name"],
+        id: data["id"],
+        name: data["name"],
         department: {
           connect: {
-            id: groupData["department_id"],
+            id: data["department_id"],
+          },
+        },
+        curator: {
+          connect: {
+            id: data["curator_id"],
           },
         },
       },
@@ -23,7 +27,7 @@ export const AuthGroupCreated = async (
     ch.publish(
       amqpConfig.exchange,
       `${amqpConfig.queue_name}.group.created`,
-      Buffer.from(JSON.stringify(group)),
+      Buffer.from(JSON.stringify(response)),
     );
     ch.ack(msg);
     console.log("group was created");

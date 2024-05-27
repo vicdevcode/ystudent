@@ -2,23 +2,23 @@ import amqplib from "amqplib/callback_api";
 import { amqpConfig } from "../../../config";
 import { prisma } from "../../../prisma";
 
-export const AuthTeacherCreated = async (
+export const MainTeacherCreated = async (
   ch: amqplib.Channel,
   msg: amqplib.Message,
 ) => {
   try {
-    const teacherData = JSON.parse(msg.content.toString());
-    const teacher = await prisma.user.create({
+    const data = JSON.parse(msg.content.toString());
+    const entity = await prisma.user.create({
       data: {
-        id: teacherData["id"],
-        firstname: teacherData["firstname"],
-        middlename: teacherData["middlename"],
-        surname: teacherData["surname"],
-        email: teacherData["email"],
-        roleType: teacherData["role"],
+        id: data["id"],
+        firstname: data["firstname"],
+        middlename: data["middlename"],
+        surname: data["surname"],
+        email: data["email"],
+        roleType: data["role"],
         teacher: {
           create: {
-            id: teacherData["role_id"],
+            id: data["role_id"],
           },
         },
       },
@@ -26,7 +26,7 @@ export const AuthTeacherCreated = async (
     ch.publish(
       amqpConfig.exchange,
       `${amqpConfig.queue_name}.teacher.created`,
-      Buffer.from(JSON.stringify(teacher)),
+      Buffer.from(JSON.stringify(entity)),
     );
     console.log("teacher was created");
     ch.ack(msg);

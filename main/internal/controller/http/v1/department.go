@@ -146,7 +146,26 @@ func (r *departmentRoute) update(c *gin.Context) {
 		return
 	}
 
+	department, err = r.ud.FindOne(c.Request.Context(), entity.Department{ID: id})
+
+	response, err := json.Marshal(department)
+	if err != nil {
+		return
+	}
+
 	c.JSON(http.StatusOK, updateDepartmentResponse(department))
+
+	r.rmq.ch.PublishWithContext(
+		c.Request.Context(),
+		r.rmq.exchange,
+		"main.department.updated",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        response,
+		},
+	)
 }
 
 type deleteDepartmentResponse struct {
@@ -164,9 +183,26 @@ func (r *departmentRoute) delete(c *gin.Context) {
 		return
 	}
 
+	response, err := json.Marshal(dto.Deleted{ID: id})
+	if err != nil {
+		return
+	}
+
 	c.JSON(http.StatusOK, deleteDepartmentResponse{
 		Message: "department was deleted",
 	})
+
+	r.rmq.ch.PublishWithContext(
+		c.Request.Context(),
+		r.rmq.exchange,
+		"main.department.deleted",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        response,
+		},
+	)
 }
 
 type addEmployeeToDepartmentRequest dto.AddEmployeeToDepartment

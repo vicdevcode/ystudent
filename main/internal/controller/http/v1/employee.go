@@ -112,7 +112,24 @@ func (r *employeeRoute) delete(c *gin.Context) {
 		return
 	}
 
+	response, err := json.Marshal(dto.Deleted{ID: id})
+	if err != nil {
+		return
+	}
+
 	c.JSON(http.StatusOK, deleteGroupResponse{
 		Message: "moderator was deleted",
 	})
+
+	r.rmq.ch.PublishWithContext(
+		c.Request.Context(),
+		r.rmq.exchange,
+		"main.employee.deleted",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        response,
+		},
+	)
 }

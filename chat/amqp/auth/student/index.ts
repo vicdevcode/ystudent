@@ -1,1 +1,0 @@
-export { AuthStudentCreated } from "./created";

@@ -6,7 +6,8 @@ const randomNumber = (min, max) => {
   return Math.floor(Math.random() * (max - min) + min);
 };
 
-let accessToken = "";
+let accessToken =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjlmNWIzYWRkLWQ2NDUtNDJiNS1iMzkxLWY0NWE0ZmFhN2QyOCIsImVtYWlsIjoidmljZGV2Y29kZUBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJleHAiOjE3MTkzNjUxNTh9.JYqRjtzK7mW70CYY68qKk2SYo_F-kFlIGwa0x8WHl_c";
 
 const authorize = async () => {
   const res = await fetch(api + "/auth/admin", {
@@ -55,7 +56,7 @@ const generateFio = () => {
 };
 
 const checkFaculties = async () => {
-  const res = await fetch(api + "/faculty", {
+  const res = await fetch(api + "/faculties", {
     method: "GET",
   });
   const json = await res.json();
@@ -80,7 +81,7 @@ const addFaculty = async () => {
   return json;
 };
 
-const addGroup = async (faculty_id, group_name) => {
+const addGroup = async (faculty_id, group_name, curator_id) => {
   const res = await fetch(api + "/group", {
     method: "POST",
     headers: {
@@ -88,7 +89,8 @@ const addGroup = async (faculty_id, group_name) => {
       Authorization: "Bearer " + accessToken,
     },
     body: JSON.stringify({
-      faculty_id: faculty_id,
+      department_id: faculty_id,
+      curator_id: curator_id,
       name: group_name,
     }),
   });
@@ -118,7 +120,7 @@ const updateCuratorGroup = async (group_id, teacher_id) => {
 const addStudent = async (email, group_id) => {
   const fio = generateFio();
 
-  const res = await fetch(api + "/student/create-with-user", {
+  const res = await fetch(api + "/student", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -141,7 +143,7 @@ const addStudent = async (email, group_id) => {
 const addTeacher = async (email) => {
   const fio = generateFio();
 
-  const res = await fetch(api + "/teacher/create-with-user", {
+  const res = await fetch(api + "/teacher", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -160,24 +162,39 @@ const addTeacher = async (email) => {
   return json;
 };
 
+const addDepartment = async (faculty_id, name) => {
+  const res = await fetch(api + "/department", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + accessToken,
+    },
+    body: JSON.stringify({
+      faculty_id: faculty_id,
+      name: name,
+    }),
+  });
+
+  const json = await res.json();
+
+  return json;
+};
+
 const start = async () => {
   const faculties = await checkFaculties();
-
   if (faculties.length == 0) {
-    await authorize();
     const imi = await addFaculty();
+    const it = await addDepartment(imi["id"], "ИТ");
     const t1 = await addTeacher(`t1@gmail.com`);
     const t2 = await addTeacher(`t2@gmail.com`);
     for (let i = 3; i <= 5; i++) {
       await addTeacher(`t${i}@gmail.com`);
     }
-    const group_ivt202 = await addGroup(imi["id"], "ИВТ-20-2");
-    await updateCuratorGroup(group_ivt202["id"], t1["teacher"]["id"]);
+    const group_ivt202 = await addGroup(it["id"], "ИВТ-20-2", t1["id"]);
     for (let i = 1; i <= 20; i++) {
       await addStudent(`s${i}@gmail.com`, group_ivt202["id"]);
     }
-    const group_ivt201 = await addGroup(imi["id"], "ИВТ-20-1");
-    await updateCuratorGroup(group_ivt201["id"], t2["teacher"]["id"]);
+    const group_ivt201 = await addGroup(it["id"], "ИВТ-20-1", t2["id"]);
     for (let i = 21; i <= 40; i++) {
       await addStudent(`s${i}@gmail.com`, group_ivt201["id"]);
     }

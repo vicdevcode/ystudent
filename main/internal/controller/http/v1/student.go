@@ -206,7 +206,24 @@ func (r *studentRoute) update(c *gin.Context) {
 		return
 	}
 
+	response, err := json.Marshal(student)
+	if err != nil {
+		return
+	}
+
 	c.JSON(http.StatusOK, updateStudentResponse(student))
+
+	r.rmq.ch.PublishWithContext(
+		c.Request.Context(),
+		r.rmq.exchange,
+		"main.student.updated",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        response,
+		},
+	)
 }
 
 func (r *studentRoute) delete(c *gin.Context) {
@@ -220,7 +237,24 @@ func (r *studentRoute) delete(c *gin.Context) {
 		return
 	}
 
+	response, err := json.Marshal(dto.Deleted{ID: id})
+	if err != nil {
+		return
+	}
+
 	c.JSON(http.StatusOK, deleteGroupResponse{
 		Message: "student was deleted",
 	})
+
+	r.rmq.ch.PublishWithContext(
+		c.Request.Context(),
+		r.rmq.exchange,
+		"main.student.deleted",
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/json",
+			Body:        response,
+		},
+	)
 }
