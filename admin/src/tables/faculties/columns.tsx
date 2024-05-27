@@ -1,15 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
   DropdownMenu,

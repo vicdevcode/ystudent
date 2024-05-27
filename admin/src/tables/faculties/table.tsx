@@ -13,17 +13,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { CSSProperties } from "react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-const setWidthColumns = (id: string, size: string | number) => {
+function setWidthColumns(id: string, size: string | number): CSSProperties {
   if (id === "actions") return { width: `${size}px`, textAlign: "center" };
   if (id === "id") return { width: `${size}px` };
   return {};
-};
+}
 
 export function FacultiesTable<TData, TValue>({
   columns,

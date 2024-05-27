@@ -1,14 +1,6 @@
 import Combobox from "@/components/Combobox";
 import { Button } from "@/components/ui/button";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -24,16 +16,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import { useApi } from "@/providers/api";
 import { useAuth } from "@/providers/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, ChevronsUpDown } from "lucide-react";
 import { FC } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
