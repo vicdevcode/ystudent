@@ -27,7 +27,7 @@ const setWidthColumns = (id: string, size: string | number) => {
   return {};
 };
 
-export function TeachersTable<TData, TValue>({
+export function StudentsTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
@@ -35,6 +35,7 @@ export function TeachersTable<TData, TValue>({
     firstname: false,
     middlename: false,
     surname: false,
+    group_id: false,
   });
 
   const table = useReactTable({

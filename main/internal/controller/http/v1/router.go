@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"log/slog"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	amqp "github.com/rabbitmq/amqp091-go"
 
@@ -33,7 +32,6 @@ func NewRouter(
 	// Options
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
-	handler.Use(cors.Default())
 
 	public := handler.Group("/api/v1")
 	private := handler.Group("/api/v1")

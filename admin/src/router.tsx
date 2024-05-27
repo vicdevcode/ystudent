@@ -6,6 +6,7 @@ import FacultiesPage from "./pages/FacultiesPage";
 import DepartmentPage from "./pages/DepartmentsPage";
 import GroupsPage from "./pages/GroupsPage";
 import TeachersPage from "./pages/TeachersPage";
+import UsersPage from "./pages/UsersPage";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
       {
         path: "groups",
         element: <GroupsPage />,
+      },
+      {
+        path: "users",
+        element: <UsersPage />,
       },
       {
         path: "teachers",

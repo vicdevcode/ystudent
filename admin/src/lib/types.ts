@@ -24,6 +24,15 @@ export interface EditTeacher {
   email?: string;
 }
 
+export interface EditStudent {
+  id: string;
+  firstname?: string;
+  middlename?: string;
+  surname?: string;
+  email?: string;
+  group_id: string;
+}
+
 export interface CreateFaculty {
   name: string;
 }
@@ -44,4 +53,12 @@ export interface CreateTeacher {
   middlename?: string;
   surname: string;
   email: string;
+}
+
+export interface CreateStudent {
+  firstname: string;
+  middlename?: string;
+  surname: string;
+  email: string;
+  group_id: string;
 }

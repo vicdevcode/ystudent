@@ -55,7 +55,7 @@ func (r *StudentRepo) FindOneByID(ctx context.Context, id uuid.UUID) (*entity.St
 
 func (r *StudentRepo) Update(ctx context.Context, data dto.UpdateStudent) (*entity.Student, error) {
 	student := &entity.Student{ID: data.ID}
-	if err := r.WithContext(ctx).Model(&student).Updates(entity.Student{GroupID: data.GroupID}).Error; err != nil {
+	if err := r.WithContext(ctx).Model(student).Update("group_id", data.GroupID).Error; err != nil {
 		return nil, err
 	}
 	return student, nil

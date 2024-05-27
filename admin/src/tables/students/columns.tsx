@@ -1,5 +1,4 @@
 import { ColumnDef } from "@tanstack/react-table";
-import CreateTeacher from "./create";
 import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
@@ -10,19 +9,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
-import EditTeacher from "./edit";
-import DeleteTeacher from "./delete";
+import CreateStudent from "./create";
+import DeleteStudent from "./delete";
+import EditStudent from "./edit";
 
-export type Teachers = {
+export type Students = {
   id: string;
   firstname: string;
   middlename: string;
   surname: string;
   name: string;
   email: string;
+  group_name: string;
+  group_id: string;
 };
 
-export const columns: ColumnDef<Teachers>[] = [
+export const columns: ColumnDef<Students>[] = [
   {
     accessorKey: "id",
     header: "id",
@@ -42,13 +44,20 @@ export const columns: ColumnDef<Teachers>[] = [
     accessorKey: "surname",
   },
   {
+    accessorKey: "group_id",
+  },
+  {
+    accessorKey: "group_name",
+    header: "Группа",
+  },
+  {
     accessorKey: "email",
     header: "Электронная почта",
   },
   {
     id: "actions",
     enableHiding: false,
-    header: () => <CreateTeacher />,
+    header: () => <CreateStudent />,
     size: 50,
     cell: ({ row }) => {
       return (
@@ -67,14 +76,15 @@ export const columns: ColumnDef<Teachers>[] = [
                   <AlertDialogTrigger>Удалить</AlertDialogTrigger>
                 </DropdownMenuItem>
               </DropdownMenuContent>
-              <EditTeacher
+              <EditStudent
                 id={row.getValue("id")}
                 firstname={row.getValue("firstname")}
                 middlename={row.getValue("middlename")}
                 surname={row.getValue("surname")}
                 email={row.getValue("email")}
+                group_id={row.getValue("group_id")}
               />
-              <DeleteTeacher id={row.getValue("id")} />
+              <DeleteStudent id={row.getValue("id")} />
             </DropdownMenu>
           </Dialog>
         </AlertDialog>

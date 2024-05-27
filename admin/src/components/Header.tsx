@@ -18,7 +18,7 @@ const Header = () => {
               <a href="/groups">Группы</a>
             </li>
             <li>
-              <a href="/teachers">Преподаватели</a>
+              <a href="/users">Пользователи</a>
             </li>
           </ul>
           <Button onClick={logout}>Выйти</Button>

@@ -187,7 +187,9 @@ func (r *studentRoute) update(c *gin.Context) {
 	}
 
 	if body.GroupID != uuid.Nil {
+		r.l.Info("", slog.Any("", body))
 		_, err := r.us.Update(c.Request.Context(), dto.UpdateStudent{
+			ID:      student.ID,
 			GroupID: body.GroupID,
 		})
 		if err != nil {

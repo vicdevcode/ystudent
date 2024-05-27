@@ -53,7 +53,10 @@ export function GroupsTable<TData, TValue>({
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id}>
+                  <TableHead
+                    key={header.id}
+                    style={setWidthColumns(header.id, header.getSize())}
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
