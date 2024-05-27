@@ -8,7 +8,6 @@ export const MainDepartmentCreated = async (
 ) => {
   try {
     const departmentData = JSON.parse(msg.content.toString());
-    console.log(departmentData);
     const group = await prisma.department.create({
       data: {
         id: departmentData["id"],
@@ -27,7 +26,7 @@ export const MainDepartmentCreated = async (
     );
     ch.ack(msg);
     console.log("department was created");
-  } catch {
-    console.log("smth went wrong");
+  } catch (e) {
+    console.log("smth went wrong", e);
   }
 };

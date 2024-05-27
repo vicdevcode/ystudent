@@ -118,7 +118,7 @@ func (r *authRoute) signIn(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("refresh_token", tokens.RefreshToken, 3600, "/", "localhost", false, true)
+	c.SetCookie("refresh_token", tokens.RefreshToken, 3600, "/", "y-student.ru", false, true)
 
 	c.JSON(http.StatusOK, &signInResponse{
 		User:         dto.UserResponse{User: user},
@@ -165,7 +165,7 @@ func (r *authRoute) refreshTokens(c *gin.Context) {
 		dto.UpdateRefreshToken{ID: user.ID, RefreshToken: tokens.RefreshToken},
 	)
 
-	c.SetCookie("refresh_token", tokens.RefreshToken, 3600, "/", "localhost", false, true)
+	c.SetCookie("refresh_token", tokens.RefreshToken, 3600, "/", "y-student.ru", false, true)
 
 	if err != nil {
 		return
@@ -194,10 +194,10 @@ func (r *authRoute) logout(c *gin.Context) {
 
 	_, err = r.uu.UpdateRefreshToken(c, dto.UpdateRefreshToken{ID: user.ID, RefreshToken: ""})
 	if err != nil {
-		c.SetCookie("refresh_token", "", -1, "/", "localhost", false, true)
+		c.SetCookie("refresh_token", "", -1, "/", "y-student.ru", false, true)
 		internalServerError(c, "can not delete refresh token in db")
 		return
 	}
-	c.SetCookie("refresh_token", "", -1, "/", "localhost", false, true)
+	c.SetCookie("refresh_token", "", -1, "/", "y-student.ru", false, true)
 	c.JSON(http.StatusOK, logoutResponse{Message: "successfully logged out"})
 }

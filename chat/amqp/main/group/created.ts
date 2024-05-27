@@ -31,7 +31,7 @@ export const MainGroupCreated = async (
     );
     ch.ack(msg);
     console.log("group was created");
-  } catch {
-    console.log("smth went wrong");
+  } catch (e) {
+    console.log("smth went wrong", e);
   }
 };

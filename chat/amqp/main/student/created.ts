@@ -34,7 +34,7 @@ export const MainStudentCreated = async (
     );
     ch.ack(msg as amqplib.Message);
     console.log("student was created");
-  } catch {
-    console.log("smth went wrong");
+  } catch (e) {
+    console.log("smth went wrong", e);
   }
 };

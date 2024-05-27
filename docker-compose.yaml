@@ -1,5 +1,18 @@
 version: "3.8"
 services:
+  y-main:
+    container_name: y-main
+    build:
+      context: ./main/
+      args:
+        - CONFIG_FILE=dev.yaml
+    restart: always
+    env_file:
+      - ./main/dev.env
+    ports:
+      - "5001:5001"
+    networks:
+      - ystudent
   y-auth:
     container_name: y-auth
     build:

@@ -44,6 +44,10 @@ io.on("connection", (socket) => {
   });
 });
 
+setInterval(() => {
+  io.sockets.emit('time-msg', { time: new Date().toISOString() })
+}, 1000)
+
 amqplib.connect(amqpConfig.url, start);
 
 server.listen(http_port, () => {
