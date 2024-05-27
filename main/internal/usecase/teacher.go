@@ -64,7 +64,20 @@ func (uc *TeacherUseCase) Delete(
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
 
-	return uc.teacherRepo.Delete(ctx, id)
+	teacher, err := uc.teacherRepo.FindOneByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := uc.teacherRepo.Delete(ctx, id); err != nil {
+		return err
+	}
+
+	if err := uc.userRepo.Delete(ctx, teacher.User.ID); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (uc *TeacherUseCase) AddGroup(

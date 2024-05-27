@@ -72,5 +72,18 @@ func (uc *StudentUseCase) Delete(
 	ctx, cancel := context.WithTimeout(c, uc.ctxTimeout)
 	defer cancel()
 
-	return uc.studentRepo.Delete(ctx, id)
+	student, err := uc.studentRepo.FindOneByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := uc.studentRepo.Delete(ctx, id); err != nil {
+		return err
+	}
+
+	if err := uc.userRepo.Delete(ctx, student.User.ID); err != nil {
+		return err
+	}
+
+	return nil
 }
