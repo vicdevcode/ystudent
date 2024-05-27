@@ -74,7 +74,7 @@ func NewRouter(
 		newDepartment(router, rmq, uc.DepartmentUseCase, uc.FacultyUseCase, l)
 		newModerator(router, rmq, uc.UserUseCase, l)
 		newEmployee(router, rmq, uc.EmployeeUseCase, l)
-		newStudent(router, rmq, uc.StudentUseCase, uc.UserUseCase, l)
+		newStudent(router, rmq, uc.StudentUseCase, uc.UserUseCase, uc.GroupUseCase, l)
 		newTeacher(router, rmq, uc.TeacherUseCase, uc.UserUseCase, l)
 		newFaculty(router, rmq, uc.FacultyUseCase, l)
 		newGroup(router, rmq, uc.GroupUseCase, uc.DepartmentUseCase, uc.TeacherUseCase, l)
