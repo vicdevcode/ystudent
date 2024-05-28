@@ -1,6 +1,9 @@
 -- CreateEnum
 CREATE TYPE "UserType" AS ENUM ('ADMIN', 'STUDENT', 'TEACHER', 'EMPLOYEE', 'MODERATOR');
 
+-- CreateEnum
+CREATE TYPE "ChatType" AS ENUM ('OFFICIAL', 'EDUCATIONAL', 'CUSTOM');
+
 -- CreateTable
 CREATE TABLE "Faculty" (
     "id" TEXT NOT NULL,
@@ -66,6 +69,25 @@ CREATE TABLE "Employee" (
 );
 
 -- CreateTable
+CREATE TABLE "Chat" (
+    "id" TEXT NOT NULL,
+    "type" "ChatType" NOT NULL,
+    "name" TEXT NOT NULL,
+
+    CONSTRAINT "Chat_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Message" (
+    "id" TEXT NOT NULL,
+    "chatId" TEXT NOT NULL,
+    "senderId" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+
+    CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_DepartmentToEmployee" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL
@@ -118,6 +140,12 @@ ALTER TABLE "Teacher" ADD CONSTRAINT "Teacher_userId_fkey" FOREIGN KEY ("userId"
 
 -- AddForeignKey
 ALTER TABLE "Employee" ADD CONSTRAINT "Employee_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Message" ADD CONSTRAINT "Message_chatId_fkey" FOREIGN KEY ("chatId") REFERENCES "Chat"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Message" ADD CONSTRAINT "Message_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_DepartmentToEmployee" ADD CONSTRAINT "_DepartmentToEmployee_A_fkey" FOREIGN KEY ("A") REFERENCES "Department"("id") ON DELETE CASCADE ON UPDATE CASCADE;
