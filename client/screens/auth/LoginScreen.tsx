@@ -1,4 +1,4 @@
-import { Button, Input } from "@rneui/base";
+import { Button, Input, Overlay, Text } from "@rneui/base";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "./AuthStack";
@@ -11,6 +11,8 @@ type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, "Login">;
 const LoginScreen = ({ navigation }: LoginScreenProps) => {
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorContent, setErrorContent] = useState("");
 
   const login = async () => {
     const response = await fetch(authAPI + "/", {
@@ -23,12 +25,18 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
         password: password,
       }),
     });
-    if (response.status != 200) return;
     const json = await response.json();
+    if (response.status != 200) {
+      setErrorVisible(true);
+      setErrorContent(json["message"]);
+      return;
+    }
 
     setSocket(json["access_token"]);
     navigation.push("Main");
   };
+
+  const understandableButton = () => setErrorVisible(false);
 
   return (
     <SafeAreaView>
@@ -39,6 +47,11 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
         secureTextEntry={true}
         placeholder="Password"
       />
+      <Overlay isVisible={errorVisible} onBackdropPress={understandableButton}>
+        <Text h4>ОШИБКА</Text>
+        <Text>{errorContent}</Text>
+        <Button onPress={understandableButton}>Понятно</Button>
+      </Overlay>
 
       <Button onPress={login}>Войти</Button>
     </SafeAreaView>

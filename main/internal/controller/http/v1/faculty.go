@@ -31,7 +31,7 @@ func newFaculty(
 		router.protected.PUT("/faculty/:id", r.update)
 		router.protected.DELETE("/faculty/:id", r.delete)
 		router.protected.POST("/faculty/", r.create)
-		router.public.GET("/faculties/", r.findAll)
+		router.public.GET("/faculties", r.findAll)
 	}
 }
 

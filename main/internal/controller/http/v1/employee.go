@@ -25,7 +25,7 @@ func newEmployee(router *router, rmq *RabbitMQ, u usecase.Employee, l *slog.Logg
 	r := &employeeRoute{rmq, u, l}
 	{
 		router.protected.POST("/employee/", r.create)
-		router.public.GET("/employees/", r.findAll)
+		router.public.GET("/employees", r.findAll)
 	}
 }
 

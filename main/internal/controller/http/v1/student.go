@@ -36,7 +36,7 @@ func newStudent(
 		router.protected.POST("/student/", r.create)
 		router.protected.PUT("/student/:id", r.update)
 		router.protected.DELETE("/student/:id", r.delete)
-		router.public.GET("/students/", r.findAll)
+		router.public.GET("/students", r.findAll)
 	}
 }
 

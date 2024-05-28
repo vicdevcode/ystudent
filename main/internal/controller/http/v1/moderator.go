@@ -26,7 +26,7 @@ func newModerator(router *router, rmq *RabbitMQ, u usecase.User, l *slog.Logger)
 	{
 		router.protected.POST("/moderator/", r.create)
 		router.protected.DELETE("/moderator/:id", r.delete)
-		router.protected.GET("/moderators/", r.findAll)
+		router.protected.GET("/moderators", r.findAll)
 	}
 }
 

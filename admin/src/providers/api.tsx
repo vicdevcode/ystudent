@@ -340,6 +340,7 @@ const ApiProvider: FC<ApiProvidersProps> = ({ children }) => {
       getTeachers(token);
       toast({
         title: "Преподаватель был создан",
+        description: "Пароль: " + json["password"],
       });
     });
   };
@@ -365,6 +366,7 @@ const ApiProvider: FC<ApiProvidersProps> = ({ children }) => {
       getStudents(token);
       toast({
         title: "Студент был создан",
+        description: "Пароль: " + json["password"],
       });
     });
   };

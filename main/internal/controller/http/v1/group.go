@@ -37,7 +37,7 @@ func newGroup(
 		router.protected.PUT("/group/:id", r.update)
 		router.protected.DELETE("/group/:id", r.delete)
 		// router.protected.PUT("/group/update_curator/:id", r.updateCurator)
-		router.public.GET("/groups/", r.findAll)
+		router.public.GET("/groups", r.findAll)
 	}
 }
 

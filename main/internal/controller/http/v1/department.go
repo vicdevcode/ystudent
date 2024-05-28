@@ -33,9 +33,9 @@ func newDepartment(
 		router.protected.POST("/department/", r.create)
 		router.protected.PUT("/department/:id", r.update)
 		router.protected.DELETE("/department/:id", r.delete)
-		router.protected.POST("/department/add-employee/", r.addEmployee)
-		router.protected.POST("/department/delete-employee/", r.deleteEmployee)
-		router.public.GET("/departments/", r.findAll)
+		router.protected.POST("/department/add-employee", r.addEmployee)
+		router.protected.POST("/department/delete-employee", r.deleteEmployee)
+		router.public.GET("/departments", r.findAll)
 	}
 }
 
