@@ -31,6 +31,8 @@ model Group {
   curator Teacher? @relation(fields: [curatorId], references: [id])
   curatorId String?
   students Student[]
+  chat Chat? @relation(fields: [chatId], references: [id])
+  chatId String? @unique
 }
 
 enum UserType {
@@ -52,6 +54,7 @@ model User {
   teacher Teacher?
   employee Employee?
   messages Message[]
+  chats Chat[]
 }
 
 model Student {
@@ -87,6 +90,8 @@ model Chat {
   type ChatType
   name String
   messages Message[]
+  group Group?
+  members User[]
 }
 
 model Message {
