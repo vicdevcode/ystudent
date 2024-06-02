@@ -2,9 +2,10 @@ import { Button, Input, Overlay, Text } from "@rneui/base";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "./AuthStack";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { authAPI } from "../../lib/config";
 import { setSocket } from "../../lib/socket";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, "Login">;
 
@@ -13,6 +14,14 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
   const [password, onChangePassword] = useState("");
   const [errorVisible, setErrorVisible] = useState(false);
   const [errorContent, setErrorContent] = useState("");
+
+  const checkAuth = async () => {
+    const value = await AsyncStorage.getItem("access_token");
+    if (value !== null) {
+      setSocket(value);
+      navigation.navigate("Main");
+    }
+  };
 
   const login = async () => {
     const response = await fetch(authAPI + "/", {
@@ -37,6 +46,10 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
   };
 
   const understandableButton = () => setErrorVisible(false);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
   return (
     <SafeAreaView>

@@ -1,10 +1,10 @@
 import { SafeAreaView } from "react-native-safe-area-context";
-import TestChat from "../../components/chat/Test";
+import { Text } from "@rneui/base";
 
 const MainScreen = () => {
   return (
     <SafeAreaView>
-      <TestChat />
+      <Text>Big page</Text>
     </SafeAreaView>
   );
 };

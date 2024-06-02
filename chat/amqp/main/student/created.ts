@@ -8,6 +8,12 @@ export const MainStudentCreated = async (
 ) => {
   try {
     const data = JSON.parse(msg.content.toString());
+    const group = await prisma.group.findUnique({
+      where: {
+        id: data["group_id"],
+      },
+    });
+    if (!group?.chatId) throw new Error("can not get group");
     const response = await prisma.user.create({
       data: {
         id: data["id"],
@@ -16,6 +22,11 @@ export const MainStudentCreated = async (
         surname: data["surname"],
         email: data["email"],
         roleType: data["role"],
+        chats: {
+          connect: {
+            id: group.chatId,
+          },
+        },
         student: {
           create: {
             group: {

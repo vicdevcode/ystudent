@@ -14,3 +14,5 @@ export const amqpConfig: AMQP_CONFIG = {
 
 export const auth_check = process.env.AUTH_CHECK as string;
 export const http_port = process.env.HTTP_PORT as string;
+export const access_token_secret = process.env.ACCESS_TOKEN_SECRET as string;
+export const refresh_token_secret = process.env.REFRESH_TOKEN_SECRET as string;

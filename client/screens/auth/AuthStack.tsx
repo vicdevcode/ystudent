@@ -1,6 +1,6 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import LoginScreen from "./LoginScreen";
-import MainScreen from "../main/MainScreen";
+import MainTabs from "../main/MainBottomNavigator";
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -17,7 +17,7 @@ const AuthStack = () => {
       })}
     >
       <Stack.Screen component={LoginScreen} name="Login" />
-      <Stack.Screen component={MainScreen} name="Main" />
+      <Stack.Screen component={MainTabs} name="Main" />
     </Stack.Navigator>
   );
 };

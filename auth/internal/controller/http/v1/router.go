@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log/slog"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -26,7 +27,13 @@ func NewRouter(
 	// Options
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
-	handler.Use(cors.Default())
+	handler.Use(cors.New(cors.Config{
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		AllowCredentials: false,
+		AllowAllOrigins:  true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	message, err := json.Marshal(StartMessage{Message: "auth microservice is started"})
 	if err != nil {

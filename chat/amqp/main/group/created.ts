@@ -8,6 +8,11 @@ export const MainGroupCreated = async (
 ) => {
   try {
     const data = JSON.parse(msg.content.toString());
+    const curator = await prisma.teacher.findUnique({
+      where: {
+        id: data["curator_id"],
+      },
+    });
     const response = await prisma.group.create({
       data: {
         id: data["id"],
@@ -20,6 +25,17 @@ export const MainGroupCreated = async (
         curator: {
           connect: {
             id: data["curator_id"],
+          },
+        },
+        chat: {
+          create: {
+            name: data["name"],
+            type: "OFFICIAL",
+            members: {
+              connect: {
+                id: curator?.userId,
+              },
+            },
           },
         },
       },
