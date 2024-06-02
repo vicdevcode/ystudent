@@ -21,19 +21,22 @@ func NewRouter(
 	handler *gin.Engine,
 	ch *amqp.Channel,
 	exchange string,
+	env string,
 	l *slog.Logger,
 	uc usecase.UseCases,
 ) {
 	// Options
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
-	handler.Use(cors.New(cors.Config{
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
-		AllowCredentials: false,
-		AllowAllOrigins:  true,
-		MaxAge:           12 * time.Hour,
-	}))
+	if env == "local" {
+		handler.Use(cors.New(cors.Config{
+			AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+			AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+			AllowCredentials: false,
+			AllowAllOrigins:  true,
+			MaxAge:           12 * time.Hour,
+		}))
+	}
 
 	message, err := json.Marshal(StartMessage{Message: "auth microservice is started"})
 	if err != nil {

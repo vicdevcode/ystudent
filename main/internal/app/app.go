@@ -104,7 +104,7 @@ func Run(cfg *config.Config) {
 		gin.SetMode(gin.DebugMode)
 	}
 	handler := gin.New()
-	v1.NewRouter(handler, ch, cfg.RabbitMQ.ExchangeName, log, usecases)
+	v1.NewRouter(handler, ch, cfg.RabbitMQ.ExchangeName, cfg.Env, log, usecases)
 	httpServer := httpserver.New(handler, (&cfg.HTTP))
 
 	// Waiting signal
