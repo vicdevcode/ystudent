@@ -9,7 +9,6 @@ import { amqpConfig, auth_check, http_port } from "./config";
 import { prisma } from "./prisma";
 import { InstanceOfJwt, JwtUser, getPayload } from "./jwt";
 import { JwtPayload } from "jsonwebtoken";
-import { ChatType } from "@prisma/client";
 
 declare global {
   namespace Express {
@@ -63,6 +62,66 @@ app.get("/", (req, res) => {
   res.json({ hello: "world" });
 });
 
+app.get("/api/v1/chat/candidates", async (req, res) => {
+  if (!InstanceOfJwt(req.user)) return res.status(401).send();
+  const user = await prisma.user.findMany({
+    include: {
+      profile: {
+        select: {
+          id: true,
+          fio: true,
+          role: true,
+          description: true,
+          tags: true,
+        },
+      },
+      chats: {
+        select: {
+          id: true,
+          name: true,
+          members: true,
+          messages: true,
+        },
+      },
+    },
+  });
+  res.json(user);
+});
+
+app.post("/api/v1/chat/add", async (req, res) => {
+  if (!InstanceOfJwt(req.user)) return res.status(401).send();
+  const body = req.body;
+  if (!body) return res.sendStatus(400);
+  if (typeof body["id"] !== "string") return res.status(400).send();
+  if (typeof body["user_id"] !== "string") return res.status(400).send();
+
+  const user = await prisma.user.findUnique({
+    where: {
+      id: body.user_id,
+    },
+  });
+  if (!user) return res.sendStatus(400);
+
+  const chat = await prisma.chat.update({
+    where: {
+      id: body.id,
+    },
+    include: {
+      members: true,
+      messages: true,
+    },
+    data: {
+      members: {
+        connect: {
+          id: user.id,
+        },
+      },
+    },
+  });
+
+  return res.status(200).json(chat);
+});
+
 app.post("/api/v1/chat/", async (req, res) => {
   if (!InstanceOfJwt(req.user)) return res.status(401).send();
   const user = await prisma.user.findUnique({
@@ -71,7 +130,6 @@ app.post("/api/v1/chat/", async (req, res) => {
     },
   });
   const body = req.body;
-  console.log(body);
   if (!body) return res.sendStatus(400);
 
   if (typeof body["name"] !== "string") return res.status(400).send();
@@ -94,6 +152,68 @@ app.post("/api/v1/chat/", async (req, res) => {
   res.json(chat);
 });
 
+app.post("/api/v1/chat/change-profile", async (req, res) => {
+  if (!InstanceOfJwt(req.user)) return res.status(401).send();
+  const body = req.body;
+  if (!body && !body.tags && !body.description) return res.sendStatus(400);
+  if (!(body.tags instanceof Array)) return res.sendStatus(400);
+  const profile = await prisma.profile.update({
+    where: {
+      userId: req.user.id,
+    },
+    include: {
+      tags: true,
+    },
+    data: {
+      description: body.description,
+      tags: {
+        connectOrCreate: body.tags.map((tag: string) => {
+          return {
+            where: { name: tag },
+            create: { name: tag },
+          };
+        }),
+      },
+    },
+  });
+
+  return res.status(200).json(profile);
+});
+
+app.post("/api/v1/chat/important", async (req, res) => {
+  if (!InstanceOfJwt(req.user)) return res.status(401).send();
+  const body = req.body;
+  if (!body) return res.sendStatus(400);
+  if (typeof body.id !== "string") return res.sendStatus(400);
+  if (typeof body.important !== "boolean") return res.sendStatus(400);
+  const message = await prisma.message.update({
+    where: { id: body.id },
+    data: { important: body.important },
+  });
+  res.status(200).json(message);
+});
+
+app.post("/api/v1/chat/create-tag", async (req, res) => {
+  if (!InstanceOfJwt(req.user)) return res.status(401).send();
+  const body = req.body;
+  if (!body) return res.sendStatus(400);
+  if (typeof body.name !== "string") return res.sendStatus(400);
+  const tag = await prisma.tag.findFirst({
+    where: {
+      name: body.name,
+    },
+  });
+  if (!tag) {
+    const newTag = await prisma.tag.create({
+      data: {
+        name: body.name,
+      },
+    });
+    return res.status(200).json(newTag);
+  }
+  return res.status(200).json(tag);
+});
+
 app.get("/api/v1/chat/get-all", async (req, res) => {
   if (!InstanceOfJwt(req.user)) return res.status(401).send();
   const user = await prisma.user.findUnique({
@@ -101,6 +221,15 @@ app.get("/api/v1/chat/get-all", async (req, res) => {
       email: req.user["email"],
     },
     include: {
+      profile: {
+        select: {
+          id: true,
+          fio: true,
+          role: true,
+          description: true,
+          tags: true,
+        },
+      },
       chats: {
         select: {
           id: true,
@@ -111,9 +240,7 @@ app.get("/api/v1/chat/get-all", async (req, res) => {
       },
     },
   });
-  res.json({
-    chats: user?.chats,
-  });
+  res.json(user);
 });
 
 type UserPayload = JwtUser | JwtPayload | string;
@@ -122,6 +249,34 @@ io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
   const access_token = socket.handshake.auth.access_token;
   const payload: UserPayload = getPayload(access_token);
+
+  socket.on("send_message_to", async (data) => {
+    let dataJwt = {
+      email: "",
+    };
+    if (InstanceOfJwt(payload)) dataJwt.email = payload["email"];
+    const user = await prisma.user.findUnique({
+      where: {
+        email: dataJwt.email,
+      },
+    });
+    if (!user?.id) return;
+    const newMessage = await prisma.message.create({
+      data: {
+        chatId: data.chat_id,
+        content: data.message,
+        senderId: user?.id,
+        important: false,
+        senderFio: user.surname + " " + user.firstname + " " + user.middlename,
+      },
+    });
+    socket.to(data.chat_id).emit("receive_message", {
+      senderId: newMessage.senderId,
+      senderFio: newMessage.senderFio,
+      content: data.message,
+      createdAt: newMessage.createdAt,
+    });
+  });
 
   socket.on("join_room", (chat_id) => {
     socket.join(chat_id);
@@ -147,6 +302,7 @@ io.on("connection", (socket) => {
           chatId: chat_id,
           content: message,
           senderId: user?.id,
+          important: false,
           senderFio:
             user.surname + " " + user.firstname + " " + user.middlename,
         },

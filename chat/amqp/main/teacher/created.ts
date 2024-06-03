@@ -8,7 +8,7 @@ export const MainTeacherCreated = async (
 ) => {
   try {
     const data = JSON.parse(msg.content.toString());
-    const entity = await prisma.user.create({
+    const response = await prisma.user.create({
       data: {
         id: data["id"],
         firstname: data["firstname"],
@@ -21,12 +21,24 @@ export const MainTeacherCreated = async (
             id: data["role_id"],
           },
         },
+        profile: {
+          create: {
+            fio:
+              data["surname"] +
+              " " +
+              data["firstname"] +
+              " " +
+              data["middlename"],
+            role: data["role"],
+            description: "Пользователь социальной сети YStudent",
+          },
+        },
       },
     });
     ch.publish(
       amqpConfig.exchange,
       `${amqpConfig.queue_name}.teacher.created`,
-      Buffer.from(JSON.stringify(entity)),
+      Buffer.from(JSON.stringify(response)),
     );
     console.log("teacher was created");
     ch.ack(msg);

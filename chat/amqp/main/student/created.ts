@@ -27,6 +27,18 @@ export const MainStudentCreated = async (
             id: group.chatId,
           },
         },
+        profile: {
+          create: {
+            fio:
+              data["surname"] +
+              " " +
+              data["firstname"] +
+              " " +
+              data["middlename"],
+            role: data["role"],
+            description: "Пользователь социальной сети YStudent",
+          },
+        },
         student: {
           create: {
             group: {
