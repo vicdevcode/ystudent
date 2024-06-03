@@ -48,6 +48,14 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
 
   const changeProfile = async () => {
     const token = await AsyncStorage.getItem("access_token");
+    const body = JSON.stringify({
+      tags: profile?.tags
+        ? tag
+          ? [...profile.tags.map((tag) => tag.name), tag]
+          : []
+        : [tag],
+      description: description,
+    });
 
     const res = await fetch(chatAPI + "/api/v1/chat/change-profile/", {
       method: "POST",
@@ -55,9 +63,27 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
         Authorization: "Bearer " + token,
         "Content-Type": "application/json",
       },
+      body: body,
+    });
+    const json = await res.json();
+    setProfile(json);
+    setTag("");
+    setDescription(json["description"]);
+    setShowCreateTag(false);
+    setShowChangeDescription(false);
+  };
+
+  const deleteTag = async (dtag: string) => {
+    const token = await AsyncStorage.getItem("access_token");
+
+    const res = await fetch(chatAPI + "/api/v1/chat/delete-tag/", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
-        tags: profile?.tags ? (tag ? [...profile.tags, tag] : []) : [tag],
-        description: description,
+        tag: dtag,
       }),
     });
     const json = await res.json();
@@ -137,7 +163,7 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
                     type: "font-awesome",
                     size: 20,
                   }}
-                  onPress={() => console.log("Icon chip was pressed!")}
+                  onPress={() => deleteTag(profileTag.name)}
                   iconRight
                   type="outline"
                 />
