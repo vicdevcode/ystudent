@@ -88,6 +88,16 @@ app.get("/api/v1/chat/candidates", async (req, res) => {
   res.json(user);
 });
 
+app.get("/api/v1/chat/get-all-chats", async (req, res) => {
+  if (!InstanceOfJwt(req.user)) return res.status(401).send();
+  const user = await prisma.chat.findMany({
+    where: {
+      type: "OFFICIAL",
+    },
+  });
+  res.json(user);
+});
+
 app.post("/api/v1/chat/add", async (req, res) => {
   if (!InstanceOfJwt(req.user)) return res.status(401).send();
   const body = req.body;

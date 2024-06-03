@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { api } from "../../lib/config";
-import { Button, Text } from "@rneui/base";
+import { Button, Icon, Text } from "@rneui/base";
 import ChatScreen from "./ChatScreen";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { parseJwt } from "../../lib/utils";
@@ -88,13 +88,20 @@ const ChatListScreen = () => {
           height: 50,
           padding: 8,
           alignItems: "center",
-          justifyContent: "flex-start",
+          justifyContent: "space-between",
           flexDirection: "row",
           borderBottomWidth: 1,
           marginBottom: 16,
         }}
       >
         <Text style={{ fontSize: 16 }}>Ваши чаты</Text>
+        <Icon
+          name="reply-all"
+          type="material"
+          style={{
+            marginEnd: 10,
+          }}
+        />
       </View>
       <View style={{ paddingHorizontal: 8, gap: 12 }}>
         {chats.length > 0 ? (
