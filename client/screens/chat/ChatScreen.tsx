@@ -149,7 +149,16 @@ const ChatScreen: FC<ChatScreenProps> = ({
           }}
         >
           {members.map((member) => (
-            <View>
+            <View
+              style={{
+                marginBottom: 4,
+                paddingHorizontal: 12,
+                paddingVertical: 4,
+                borderRadius: 12,
+                backgroundColor: "#eee",
+              }}
+              key={member.id}
+            >
               <Text style={{ fontSize: 14 }}>
                 {shortFio(
                   `${member.surname} ${member.firstname} ${member.middlename}`,
@@ -157,7 +166,7 @@ const ChatScreen: FC<ChatScreenProps> = ({
               </Text>
               {(member.roleType === "TEACHER" ||
                 member.roleType === "STUDENT") && (
-                  <Text style={{ fontSize: 12 }}>
+                  <Text style={{ color: "#999", fontSize: 12 }}>
                     {roleTypes[member.roleType]}
                   </Text>
                 )}
