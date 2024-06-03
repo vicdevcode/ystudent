@@ -177,6 +177,9 @@ app.get("/api/v1/chat/get-profile", async (req, res) => {
     where: {
       userId: req.user.id,
     },
+    include: {
+      tags: true,
+    },
   });
   res.status(200).json(profile);
 });
