@@ -152,6 +152,35 @@ app.post("/api/v1/chat/", async (req, res) => {
   res.json(chat);
 });
 
+app.post("/api/v1/chat/search", async (req, res) => {
+  if (!InstanceOfJwt(req.user)) return res.status(401).send();
+  const body = req.body;
+  if (!body && !body.tag) return res.sendStatus(400);
+  const profile = await prisma.profile.findMany({
+    where: {
+      tags: {
+        some: {
+          name: body.tag,
+        },
+      },
+    },
+    include: {
+      tags: true,
+    },
+  });
+  res.status(200).json(profile);
+});
+
+app.get("/api/v1/chat/get-profile", async (req, res) => {
+  if (!InstanceOfJwt(req.user)) return res.status(401).send();
+  const profile = await prisma.profile.findUnique({
+    where: {
+      userId: req.user.id,
+    },
+  });
+  res.status(200).json(profile);
+});
+
 app.post("/api/v1/chat/change-profile", async (req, res) => {
   if (!InstanceOfJwt(req.user)) return res.status(401).send();
   const body = req.body;
