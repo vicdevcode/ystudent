@@ -184,6 +184,31 @@ app.get("/api/v1/chat/get-profile", async (req, res) => {
   res.status(200).json(profile);
 });
 
+app.post("/api/v1/chat/delete-tag", async (req, res) => {
+  if (!InstanceOfJwt(req.user)) return res.status(401).send();
+  const body = req.body;
+  if (!body && !body.tag) return res.sendStatus(400);
+
+  const profile = await prisma.profile.update({
+    where: {
+      userId: req.user.id,
+    },
+    include: {
+      tags: true,
+    },
+    data: {
+      description: body.description,
+      tags: {
+        delete: {
+          name: body.tag,
+        },
+      },
+    },
+  });
+
+  return res.status(200).json(profile);
+});
+
 app.post("/api/v1/chat/change-profile", async (req, res) => {
   if (!InstanceOfJwt(req.user)) return res.status(401).send();
   const body = req.body;

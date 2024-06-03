@@ -49,18 +49,20 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
   const changeProfile = async () => {
     const token = await AsyncStorage.getItem("access_token");
 
-    const res = await fetch(chatAPI + "/api/v1/chat/change-profile", {
+    const res = await fetch(chatAPI + "/api/v1/chat/change-profile/", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + token,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        tags: profile?.tags ? [...profile.tags, tag] : [tag],
+        tags: profile?.tags ? (tag ? [...profile.tags, tag] : []) : [tag],
         description: description,
       }),
     });
     const json = await res.json();
     setProfile(json);
+    setTag("");
     setDescription(json["description"]);
     console.log(json);
   };
@@ -186,7 +188,7 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
               />
             </View>
             <Icon
-              onPress={() => console.log("hey")}
+              onPress={changeProfile}
               containerStyle={{
                 backgroundColor: "#2089dc",
                 padding: 8,
@@ -223,7 +225,7 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
               <Input value={tag} onChangeText={(value) => setTag(value)} />
             </View>
             <Icon
-              onPress={() => console.log("hey")}
+              onPress={changeProfile}
               containerStyle={{
                 backgroundColor: "#2089dc",
                 padding: 8,
