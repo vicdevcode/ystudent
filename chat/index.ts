@@ -158,6 +158,9 @@ app.post("/api/v1/chat/search", async (req, res) => {
   if (!body && !body.tag) return res.sendStatus(400);
   const profile = await prisma.profile.findMany({
     where: {
+      NOT: {
+        userId: req.user.id,
+      },
       tags: {
         some: {
           name: body.tag,
