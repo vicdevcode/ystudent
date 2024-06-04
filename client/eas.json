@@ -1,0 +1,15 @@
+{
+  "build": {
+    "preview": {
+      "env": {
+        "EXPO_PUBLIC_CHAT_API": "http://chat.y-student.ru",
+        "EXPO_PUBLIC_AUTH_API": "http://api.y-student.ru/api/v1/auth",
+        "EXPO_PUBLIC_API": "http://api.y-student.ru/api/v1"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {}
+  }
+}

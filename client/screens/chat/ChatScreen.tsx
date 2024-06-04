@@ -1,10 +1,17 @@
-import { Button, Dialog, Icon, Input, Text } from "@rneui/base";
-import { StyleSheet, View } from "react-native";
+import { Button, CheckBox, Dialog, Icon, Input, Text } from "@rneui/base";
+import { Pressable, StyleSheet, View } from "react-native";
 import { FC, useEffect, useState } from "react";
-import { socketIO } from "../../lib/socket";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { isoStringToDate, roleTypes, shortFio } from "../../lib/utils";
+import {
+  isoStringToDate,
+  parseJwt,
+  roleTypes,
+  shortFio,
+} from "../../lib/utils";
 import { ScrollView } from "react-native-gesture-handler";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { chatAPI } from "../../lib/config";
+import { Socket, io } from "socket.io-client";
 
 interface ChatScreenProps {
   id: string;
@@ -18,15 +25,17 @@ interface ChatScreenProps {
     roleType: string;
   }[];
   messages: Message[];
+  token: string;
   back: () => void;
-  chats: () => Promise<void>;
 }
 
 interface Message {
+  id?: string;
   senderId?: string;
   content: string;
   senderFio: string;
   createdAt: string;
+  important: boolean;
 }
 
 const ChatScreen: FC<ChatScreenProps> = ({
@@ -35,78 +44,126 @@ const ChatScreen: FC<ChatScreenProps> = ({
   messages,
   members,
   back,
-  chats,
+  token,
 }) => {
   const [chatMessages, setMessages] = useState<Message[]>(messages);
   const [message, setMessage] = useState<string>("");
+  const [filteredMessages, setFilteredMessages] = useState<Message[]>(messages);
   const [showMembers, setShowMembers] = useState(false);
+  const [showChangeImportant, setShowChangeImportant] = useState(false);
+  const [checkImportant, setCheckImportant] = useState(false);
+  const [messageId, setMessageId] = useState<string>("");
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   const toggleShowMembers = () => {
     setShowMembers(!showMembers);
   };
 
-  const sendMessage = () => {
-    if (!socketIO.socket) return;
-    setMessages([
-      ...chatMessages,
-      {
-        content: message,
-        senderFio: "me",
-        createdAt: new Date().toISOString(),
+  const toggleShowChangeImportant = (id: string, important: boolean) => {
+    setMessageId(id);
+    setCheckImportant(important);
+    setShowChangeImportant(!showChangeImportant);
+  };
+
+  const getChatsMessages = async () => {
+    const token = await AsyncStorage.getItem("access_token");
+    try {
+      const res = await fetch(chatAPI + "/api/v1/chat/get-all", {
+        method: "GET",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      });
+      const json = await res.json();
+      if (res.status != 200) return;
+
+      const payload = parseJwt(token as string);
+      for (let i = 0; i < json["chats"].length; i++) {
+        if (json["chats"][i]["id"] != id) continue;
+        json["chats"][i]["messages"] = json["chats"][i]["messages"].sort(
+          (a: Message, b: Message) => {
+            const adate = Date.parse(a.createdAt);
+            const bdate = Date.parse(b.createdAt);
+            if (adate < bdate) return -1;
+            if (adate > bdate) return 1;
+            return 0;
+          },
+        );
+        for (let j = 0; j < json["chats"][i]["messages"].length; j++) {
+          if (json["chats"][i]["messages"][j]["senderId"] === payload["id"]) {
+            json["chats"][i]["messages"][j]["senderFio"] = "me";
+          }
+        }
+        setMessages(json["chats"][i]["messages"]);
+        setFilteredMessages(json["chats"][i]["messages"]);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const changeImportant = async () => {
+    const token = await AsyncStorage.getItem("access_token");
+
+    const res = await fetch(chatAPI + "/api/v1/chat/important/", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+        "Content-Type": "application/json",
       },
-    ]);
-    socketIO.socket.emit("send_message", message);
-    chats();
-    setMessage("");
-  };
-  // const [chats, setChats] = useState([]);
-  // const [users, setUsers] = useState<string[]>([]);
-
-  // const getChats = async () => {
-  //   const token = await AsyncStorage.getItem("access_token");
-  //   try {
-  //     const res = await fetch(api + "/chat/get-all", {
-  //       method: "GET",
-  //       headers: {
-  //         Authorization: "Bearer " + token,
-  //       },
-  //     });
-  //     const json = await res.json();
-  //     if (res.status != 200) return;
-  //     setChats(json["chats"]);
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // };
-
-  const joinRoom = (name: string) => {
-    if (!socketIO.socket) return;
-    socketIO.socket?.emit("join_room", name);
+      body: JSON.stringify({
+        id: messageId,
+        important: !checkImportant,
+      }),
+    });
+    if (res.status !== 200) return;
+    setCheckImportant(!checkImportant);
+    await getChatsMessages();
   };
 
-  const leaveRoom = () => {
-    if (!socketIO.socket) return;
-    socketIO.socket.emit("leave_room");
+  const sendMessage = async () => {
+    if (!socket) return;
+    socket.emit("send_message", message);
+    setTimeout(async () => {
+      await getChatsMessages();
+      setMessage("");
+    }, 500);
+  };
+
+  const filterMessages = () => {
+    if (filteredMessages.length != chatMessages.length) {
+      setFilteredMessages(chatMessages);
+    } else {
+      setFilteredMessages(chatMessages.filter((msg) => msg.important));
+    }
+  };
+  const joinRoom = (good_socket: Socket, name: string) => {
+    if (!good_socket) return;
+    good_socket.emit("join_room", name);
   };
 
   useEffect(() => {
-    joinRoom(id);
-    if (socketIO.socket) {
-      socketIO.socket.on("user_joined", (data) => console.log(data));
+    const good_socket = io(chatAPI, {
+      transports: ["websocket"],
+      auth: {
+        access_token: token,
+      },
+    });
 
-      socketIO.socket.on("receive_message", (msg: Message) =>
-        setMessages([...chatMessages, msg]),
-      );
-      // socketIO.socket.on("user_joined", (data) => {
-      //   setUsers([...users, data.userId as string]);
-      // });
+    setSocket(good_socket);
+
+    getChatsMessages();
+    joinRoom(good_socket, id);
+    if (good_socket) {
+      good_socket.on("receive_message", () => {
+        getChatsMessages();
+      });
     }
-
     return () => {
-      if (socketIO.socket) {
-        socketIO.socket.disconnect();
-        socketIO.socket.removeAllListeners();
-      }
+      if (!good_socket) return;
+      good_socket.emit("leave_room");
+      good_socket.removeAllListeners();
+      good_socket.disconnect();
     };
   }, []);
 
@@ -132,6 +189,12 @@ const ChatScreen: FC<ChatScreenProps> = ({
           type="material"
           size={24}
           onPress={toggleShowMembers}
+        />
+        <Icon
+          name="feedback"
+          type="material"
+          size={24}
+          onPress={filterMessages}
         />
       </View>
       <Dialog
@@ -174,13 +237,21 @@ const ChatScreen: FC<ChatScreenProps> = ({
           ))}
         </ScrollView>
       </Dialog>
-
-      {/*members.map((member) => (
-        <View>
-          <Text>{`${member.surname} ${member.firstname} ${member.middlename}`}</Text>
-          <Text>{member.roleType}</Text>
-        </View>
-      ))*/}
+      <Dialog
+        isVisible={showChangeImportant}
+        onBackdropPress={() => setShowChangeImportant(!showChangeImportant)}
+        overlayStyle={{
+          backgroundColor: "#fff",
+        }}
+        statusBarTranslucent
+      >
+        <Dialog.Title title="Важность" />
+        <CheckBox
+          title="Это сообщение важное?"
+          checked={checkImportant}
+          onPress={changeImportant}
+        />
+      </Dialog>
       <ScrollView
         contentContainerStyle={{
           justifyContent: "flex-end",
@@ -196,9 +267,15 @@ const ChatScreen: FC<ChatScreenProps> = ({
             gap: 8,
           }}
         >
-          {chatMessages &&
-            chatMessages.map((msg, i) => (
-              <View key={i} style={{ width: "100%" }}>
+          {filteredMessages &&
+            filteredMessages.map((msg, i) => (
+              <Pressable
+                onLongPress={() =>
+                  toggleShowChangeImportant(msg.id as string, msg.important)
+                }
+                key={i}
+                style={{ width: "100%" }}
+              >
                 <View
                   style={
                     msg.senderFio === "me"
@@ -235,7 +312,7 @@ const ChatScreen: FC<ChatScreenProps> = ({
                     {isoStringToDate(msg.createdAt)}
                   </Text>
                 </View>
-              </View>
+              </Pressable>
             ))}
         </ScrollView>
         <View
