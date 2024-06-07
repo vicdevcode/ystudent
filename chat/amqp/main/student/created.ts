@@ -14,6 +14,18 @@ export const MainStudentCreated = async (
       },
     });
     if (!group?.chatId) throw new Error("can not get group");
+    const department = await prisma.department.findUnique({
+      where: {
+        id: group.departmentId,
+      },
+    });
+    if (!department?.chatId) throw new Error("can not get department");
+    const faculty = await prisma.faculty.findUnique({
+      where: {
+        id: department.facultyId,
+      },
+    });
+    if (!faculty?.chatId) throw new Error("can not get faculty");
     const response = await prisma.user.create({
       data: {
         id: data["id"],
@@ -23,9 +35,23 @@ export const MainStudentCreated = async (
         email: data["email"],
         roleType: data["role"],
         chats: {
-          connect: {
-            id: group.chatId,
-          },
+          create: [
+            {
+              name: "Новости",
+              type: "USER_NEWS",
+            },
+          ],
+          connect: [
+            {
+              id: group.chatId,
+            },
+            {
+              id: department.chatId,
+            },
+            {
+              id: faculty.chatId,
+            },
+          ],
         },
         profile: {
           create: {

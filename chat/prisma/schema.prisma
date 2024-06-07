@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
@@ -9,30 +9,34 @@ datasource db {
 }
 
 model Faculty {
-  id String @id @default(uuid())
-  name String @unique
+  id          String       @id @default(uuid())
+  name        String       @unique
   departments Department[]
+  chat        Chat?        @relation(fields: [chatId], references: [id])
+  chatId      String?      @unique
 }
 
 model Department {
-  id String @id @default(uuid())
-  name String @unique
-  faculty Faculty @relation(fields: [facultyId], references: [id])
+  id        String     @id @default(uuid())
+  name      String     @unique
+  faculty   Faculty    @relation(fields: [facultyId], references: [id])
   facultyId String
   employees Employee[]
-  groups Group[]
+  groups    Group[]
+  chat      Chat?      @relation(fields: [chatId], references: [id])
+  chatId    String?    @unique
 }
 
 model Group {
-  id String @id @default(uuid())
-  name String @unique
-  department Department @relation(fields: [departmentId], references: [id])
+  id           String     @id @default(uuid())
+  name         String     @unique
+  department   Department @relation(fields: [departmentId], references: [id])
   departmentId String
-  curator Teacher? @relation(fields: [curatorId], references: [id])
-  curatorId String?
-  students Student[]
-  chat Chat? @relation(fields: [chatId], references: [id])
-  chatId String? @unique
+  curator      Teacher?   @relation(fields: [curatorId], references: [id])
+  curatorId    String?
+  students     Student[]
+  chat         Chat?      @relation(fields: [chatId], references: [id])
+  chatId       String?    @unique
 }
 
 enum UserType {
@@ -44,81 +48,98 @@ enum UserType {
 }
 
 model User {
-  id String @id @default(uuid())
-  firstname String   
-  surname String
+  id         String         @id @default(uuid())
+  firstname  String
+  surname    String
   middlename String?
-  email String @unique
-  roleType UserType 
-  student Student?
-  teacher Teacher?
-  employee Employee?
-  profile Profile?
-  messages Message[]
-  chats Chat[]
+  email      String         @unique
+  roleType   UserType
+  student    Student?
+  teacher    Teacher?
+  employee   Employee?
+  profile    Profile?
+  messages   Message[]
+  chats      Chat[]
+  ChatAdmins ChatOnAdmins[]
 }
 
 model Student {
-  id String @id @default(uuid())
-  user User @relation(fields: [userId], references: [id])
-  userId String @unique
-  group Group @relation(fields: [groupId], references: [id])
-  groupId String 
+  id      String @id @default(uuid())
+  user    User   @relation(fields: [userId], references: [id])
+  userId  String @unique
+  group   Group  @relation(fields: [groupId], references: [id])
+  groupId String
 }
 
 model Teacher {
-  id String @id @default(uuid())
-  user User @relation(fields: [userId], references: [id])
-  userId String @unique
-  groups Group[] 
+  id     String  @id @default(uuid())
+  user   User    @relation(fields: [userId], references: [id])
+  userId String  @unique
+  groups Group[]
 }
 
 model Employee {
-  id String @id @default(uuid())
-  user User @relation(fields: [userId], references: [id])
-  userId String @unique
-  departmets Department[] 
+  id         String       @id @default(uuid())
+  user       User         @relation(fields: [userId], references: [id])
+  userId     String       @unique
+  departmets Department[]
 }
 
 enum ChatType {
+  NEWS
+  USER_NEWS
   OFFICIAL
   EDUCATIONAL
   CUSTOM
 }
 
 model Chat {
-  id String @id @default(uuid())
-  type ChatType
-  name String
-  messages Message[]
-  group Group?
-  members User[]
+  id         String         @id @default(uuid())
+  type       ChatType
+  name       String
+  messages   Message[]
+  group      Group?
+  department Department?
+  faculty    Faculty?
+  members    User[]
+  ChatAdmins ChatOnAdmins[]
+}
+
+model ChatOnAdmins {
+  chatId String
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  chat   Chat   @relation(fields: [chatId], references: [id])
+
+  @@id([chatId, userId])
 }
 
 model Message {
-  id String @id @default(uuid())
-  chat Chat @relation(fields: [chatId], references: [id])
-  chatId String
-  user User @relation(fields: [senderId], references: [id])
-  senderId String
+  id        String   @id @default(uuid())
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  chatId    String
+  user      User     @relation(fields: [senderId], references: [id])
+  senderId  String
   senderFio String
-  content String
-  important Boolean
+  content   String
+  is_task   Boolean  @default(false)
+  is_news   Boolean  @default(false)
+  important Boolean  @default(false)
   createdAt DateTime @default(now())
 }
 
 model Profile {
-  id String @id @default(uuid())
-  user User? @relation(fields: [userId], references: [id])
-  userId String? @unique
-  fio String
-  role String
+  id          String  @id @default(uuid())
+  user        User?   @relation(fields: [userId], references: [id])
+  userId      String? @unique
+  fio         String
+  role        String
   description String
-  tags Tag[]
+  tags        Tag[]
 }
 
 model Tag {
-  id String @id @default(uuid())
-  name String @unique
+  id       String    @id @default(uuid())
+  name     String    @unique
   profiles Profile[]
 }

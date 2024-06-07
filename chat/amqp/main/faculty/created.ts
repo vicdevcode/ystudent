@@ -12,6 +12,12 @@ export const MainFacultyCreated = async (
       data: {
         id: data["id"],
         name: data["name"],
+        chat: {
+          create: {
+            name: data["name"],
+            type: "NEWS",
+          },
+        },
       },
     });
     ch.publish(

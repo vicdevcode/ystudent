@@ -21,6 +21,12 @@ export const MainTeacherCreated = async (
             id: data["role_id"],
           },
         },
+        chats: {
+          create: {
+            name: "Новости",
+            type: "USER_NEWS",
+          },
+        },
         profile: {
           create: {
             fio:

@@ -7,14 +7,20 @@ export const MainDepartmentCreated = async (
   msg: amqplib.Message,
 ) => {
   try {
-    const departmentData = JSON.parse(msg.content.toString());
+    const data = JSON.parse(msg.content.toString());
     const group = await prisma.department.create({
       data: {
-        id: departmentData["id"],
-        name: departmentData["name"],
+        id: data["id"],
+        name: data["name"],
+        chat: {
+          create: {
+            name: data["name"],
+            type: "NEWS",
+          },
+        },
         faculty: {
           connect: {
-            id: departmentData["faculty_id"],
+            id: data["faculty_id"],
           },
         },
       },
