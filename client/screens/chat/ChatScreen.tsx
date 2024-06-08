@@ -1,5 +1,5 @@
 import { Button, CheckBox, Dialog, Icon, Input, Text } from "@rneui/base";
-import { Pressable, StyleSheet, View } from "react-native";
+import { PlatformColor, Pressable, StyleSheet, View } from "react-native";
 import { FC, useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -12,6 +12,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { chatAPI } from "../../lib/config";
 import { Socket, io } from "socket.io-client";
+import { isEnabled } from "react-native/Libraries/Performance/Systrace";
 
 interface ChatScreenProps {
   id: string;
@@ -56,6 +57,7 @@ const ChatScreen: FC<ChatScreenProps> = ({
   const [checkImportant, setCheckImportant] = useState(false);
   const [messageId, setMessageId] = useState<string>("");
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [isUserEditor, setIsUserEditor] = useState<boolean>(false);
 
   const toggleShowMembers = () => {
     setShowMembers(!showMembers);
@@ -65,6 +67,35 @@ const ChatScreen: FC<ChatScreenProps> = ({
     setMessageId(id);
     setCheckImportant(important);
     setShowChangeImportant(!showChangeImportant);
+  };
+
+  const isEditor = async () => {
+    if (!(type == "NEWS" || type == "USER_NEWS")) return setIsUserEditor(true);
+    try {
+      const token = await AsyncStorage.getItem("access_token");
+      const payload = parseJwt(token as string);
+      const res = await fetch(chatAPI + "/api/v1/chat/check-admin/", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + token,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chat_id: id,
+          user_id: payload["id"],
+        }),
+      });
+      const json = await res.json();
+      console.log(json);
+      if (res.status != 200) return;
+      if (!json) return;
+      if (!(json["chat_id"] && json["user_id"])) return;
+      console.log(json);
+      setIsUserEditor(true);
+    } catch (e) {
+      console.error(e);
+      setIsUserEditor(false);
+    }
   };
 
   const getChatsMessages = async () => {
@@ -146,6 +177,7 @@ const ChatScreen: FC<ChatScreenProps> = ({
   };
 
   useEffect(() => {
+    isEditor();
     const good_socket = io(chatAPI, {
       transports: ["websocket"],
       auth: {
@@ -187,7 +219,7 @@ const ChatScreen: FC<ChatScreenProps> = ({
         >
           {name}
         </Text>
-        {!(type == "NEWS" || type == "USER_NEWS") && (
+        {isUserEditor && (
           <>
             <Icon
               name="people"
@@ -204,7 +236,7 @@ const ChatScreen: FC<ChatScreenProps> = ({
           </>
         )}
       </View>
-      {!(type == "NEWS" || type == "USER_NEWS") && (
+      {isUserEditor && (
         <>
           <Dialog
             isVisible={showMembers}
@@ -282,7 +314,7 @@ const ChatScreen: FC<ChatScreenProps> = ({
             filteredMessages.map((msg, i) => (
               <Pressable
                 onLongPress={() =>
-                  !(type == "NEWS" || type == "USER_NEWS") &&
+                  isUserEditor &&
                   toggleShowChangeImportant(msg.id as string, msg.important)
                 }
                 key={i}
@@ -327,38 +359,40 @@ const ChatScreen: FC<ChatScreenProps> = ({
               </Pressable>
             ))}
         </ScrollView>
-        <View
-          style={{
-            flexDirection: "row",
-            marginTop: 12,
-          }}
-        >
+        {isUserEditor && (
           <View
             style={{
-              flex: 1,
+              flexDirection: "row",
+              marginTop: 12,
             }}
           >
-            <Input
-              value={message}
-              onChangeText={(value) => setMessage(value)}
+            <View
+              style={{
+                flex: 1,
+              }}
+            >
+              <Input
+                value={message}
+                onChangeText={(value) => setMessage(value)}
+              />
+            </View>
+            <Button
+              onPress={sendMessage}
+              icon={{
+                name: "send",
+                type: "material",
+                color: "#FFF",
+              }}
+              buttonStyle={{
+                borderRadius: 12,
+              }}
+              containerStyle={{
+                width: 60,
+                paddingRight: 8,
+              }}
             />
           </View>
-          <Button
-            onPress={sendMessage}
-            icon={{
-              name: "send",
-              type: "material",
-              color: "#FFF",
-            }}
-            buttonStyle={{
-              borderRadius: 12,
-            }}
-            containerStyle={{
-              width: 60,
-              paddingRight: 8,
-            }}
-          />
-        </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

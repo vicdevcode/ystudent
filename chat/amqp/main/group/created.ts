@@ -13,7 +13,8 @@ export const MainGroupCreated = async (
         id: data["curator_id"],
       },
     });
-    const response = await prisma.group.create({
+    if (!curator?.userId) throw new Error("can not get curator");
+    const group = await prisma.group.create({
       data: {
         id: data["id"],
         name: data["name"],
@@ -40,10 +41,39 @@ export const MainGroupCreated = async (
         },
       },
     });
+    const department = await prisma.department.findUnique({
+      where: {
+        id: group.departmentId,
+      },
+    });
+    if (!department?.chatId) throw new Error("can not get department");
+    const faculty = await prisma.faculty.findUnique({
+      where: {
+        id: department.facultyId,
+      },
+    });
+    if (!faculty?.chatId) throw new Error("can not get faculty");
+    await prisma.user.update({
+      where: {
+        id: curator?.userId,
+      },
+      data: {
+        chats: {
+          connect: [
+            {
+              id: department.chatId,
+            },
+            {
+              id: faculty.chatId,
+            },
+          ],
+        },
+      },
+    });
     ch.publish(
       amqpConfig.exchange,
       `${amqpConfig.queue_name}.group.created`,
-      Buffer.from(JSON.stringify(response)),
+      Buffer.from(JSON.stringify(group)),
     );
     ch.ack(msg);
     console.log("group was created");
