@@ -11,6 +11,7 @@ import { JwtPayload } from "jsonwebtoken";
 import {
   addAdmin,
   chatAddMember,
+  checkAdmin,
   createChat,
   deleteAdmin,
   getAdmins,
@@ -79,6 +80,8 @@ app.post("/api/v1/chat/add-admin", addAdmin);
 app.post("/api/v1/chat/delete-admin", deleteAdmin);
 
 app.post("/api/v1/chat/get-admins", getAdmins);
+
+app.post("/api/v1/chat/check-admin", checkAdmin);
 
 io.on("connection", socketImp);
 
