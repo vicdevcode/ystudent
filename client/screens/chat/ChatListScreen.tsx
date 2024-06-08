@@ -43,6 +43,8 @@ const ChatListScreen = () => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [showSendTo, setShowSendTo] = useState(false);
+  const [showCreateChat, setShowCreateChat] = useState(false);
+  const [createChatName, setCreateChatName] = useState<string>("");
   const [allChats, setAllChats] = useState<AllChatCheckbox[]>([]);
   const [allChecks, setAllChecks] = useState<boolean[]>([]);
   const [alertMessage, setAlertMessage] = useState<string>("");
@@ -51,6 +53,10 @@ const ChatListScreen = () => {
 
   const toogleShowSendTo = () => {
     setShowSendTo(!showSendTo);
+  };
+
+  const toogleShowCreateChat = () => {
+    setShowCreateChat(!showCreateChat);
   };
 
   const check = (i: number) => {
@@ -113,6 +119,25 @@ const ChatListScreen = () => {
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const createChat = async () => {
+    const token = await AsyncStorage.getItem("access_token");
+
+    const res = await fetch(chatAPI + "/api/v1/chat/", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: createChatName,
+        type: "CUSTOM",
+      }),
+    });
+    console.log(res.status);
+    if (res.status != 200) return;
+    getChats();
   };
 
   const sendAlertMessage = () => {
@@ -179,17 +204,40 @@ const ChatListScreen = () => {
             }}
           >
             <Text style={{ fontSize: 16 }}>Ваши чаты</Text>
-            {role === "TEACHER" && (
+            <View style={{ flexDirection: "row", gap: 16 }}>
+              {role === "TEACHER" && (
+                <Icon
+                  onPress={toogleShowSendTo}
+                  name="reply-all"
+                  type="material"
+                />
+              )}
               <Icon
-                onPress={toogleShowSendTo}
-                name="reply-all"
+                onPress={toogleShowCreateChat}
+                name="add"
                 type="material"
                 style={{
                   marginEnd: 10,
                 }}
               />
-            )}
+            </View>
           </View>
+          <Dialog
+            isVisible={showCreateChat}
+            onBackdropPress={toogleShowCreateChat}
+            overlayStyle={{
+              backgroundColor: "#fff",
+              marginBottom: 200,
+            }}
+            statusBarTranslucent
+          >
+            <Dialog.Title title="Создать чат" />
+            <Input
+              value={createChatName}
+              onChangeText={(value) => setCreateChatName(value)}
+            />
+            <Button onPress={createChat} title="Отправить" />
+          </Dialog>
           <Dialog
             isVisible={showSendTo}
             onBackdropPress={toogleShowSendTo}

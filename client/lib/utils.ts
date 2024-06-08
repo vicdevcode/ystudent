@@ -33,4 +33,5 @@ export function parseJwt(token: string): any {
 export const roleTypes = {
   TEACHER: "преподаватель",
   STUDENT: "студент",
+  EMPLOYEE: "сотрудник",
 };

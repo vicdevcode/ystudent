@@ -13,17 +13,19 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { chatAPI } from "../../lib/config";
 import { Socket, io } from "socket.io-client";
 
+interface User {
+  id: string;
+  email: string;
+  firstname: string;
+  surname: string;
+  middlename: string;
+  roleType: string;
+}
+
 interface ChatScreenProps {
   id: string;
   name: string;
-  members: {
-    id: string;
-    email: string;
-    firstname: string;
-    surname: string;
-    middlename: string;
-    roleType: string;
-  }[];
+  members: User[];
   messages: Message[];
   token: string;
   type: string;
@@ -50,16 +52,23 @@ const ChatScreen: FC<ChatScreenProps> = ({
 }) => {
   const [chatMessages, setMessages] = useState<Message[]>(messages);
   const [message, setMessage] = useState<string>("");
+  const [candidates, setCandidates] = useState<User[]>([]);
   const [filteredMessages, setFilteredMessages] = useState<Message[]>(messages);
   const [showMembers, setShowMembers] = useState(false);
+  const [showCandidates, setShowCandidates] = useState(false);
   const [showChangeImportant, setShowChangeImportant] = useState(false);
   const [checkImportant, setCheckImportant] = useState(false);
   const [messageId, setMessageId] = useState<string>("");
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isUserEditor, setIsUserEditor] = useState<boolean>(false);
+  const [currentMembers, setCurrentMembers] = useState<User[]>(members);
 
   const toggleShowMembers = () => {
     setShowMembers(!showMembers);
+  };
+
+  const toggleShowCandidates = () => {
+    setShowCandidates(!showCandidates);
   };
 
   const toggleShowChangeImportant = (id: string, important: boolean) => {
@@ -133,7 +142,6 @@ const ChatScreen: FC<ChatScreenProps> = ({
 
   const changeImportant = async () => {
     const token = await AsyncStorage.getItem("access_token");
-
     const res = await fetch(chatAPI + "/api/v1/chat/important/", {
       method: "POST",
       headers: {
@@ -143,6 +151,8 @@ const ChatScreen: FC<ChatScreenProps> = ({
       body: JSON.stringify({
         id: messageId,
         important: !checkImportant,
+        is_news: false,
+        is_task: false,
       }),
     });
     if (res.status !== 200) return;
@@ -157,6 +167,43 @@ const ChatScreen: FC<ChatScreenProps> = ({
       await getChatsMessages();
       setMessage("");
     }, 500);
+  };
+
+  const getCandidates = async () => {
+    const token = await AsyncStorage.getItem("access_token");
+    const res = await fetch(chatAPI + "/api/v1/chat/candidates/", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: id,
+      }),
+    });
+    const json = await res.json();
+    if (res.status !== 200) return;
+    setCandidates(json);
+  };
+
+  const addMember = async (user_id: string) => {
+    const token = await AsyncStorage.getItem("access_token");
+    const res = await fetch(chatAPI + "/api/v1/chat/add/", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: id,
+        user_id: user_id,
+      }),
+    });
+    const json = await res.json();
+    console.log(json);
+    if (res.status !== 200) return;
+    setCurrentMembers([...currentMembers, json]);
+    await getCandidates();
   };
 
   const sendNews = async () => {
@@ -183,6 +230,7 @@ const ChatScreen: FC<ChatScreenProps> = ({
 
   useEffect(() => {
     isEditor();
+    getCandidates();
     const good_socket = io(chatAPI, {
       transports: ["websocket"],
       auth: {
@@ -238,6 +286,14 @@ const ChatScreen: FC<ChatScreenProps> = ({
               size={24}
               onPress={filterMessages}
             />
+            {type == "CUSTOM" && (
+              <Icon
+                name="add"
+                type="material"
+                size={24}
+                onPress={toggleShowCandidates}
+              />
+            )}
           </>
         )}
       </View>
@@ -257,7 +313,7 @@ const ChatScreen: FC<ChatScreenProps> = ({
                 maxHeight: 400,
               }}
             >
-              {members.map((member) => (
+              {currentMembers.map((member) => (
                 <View
                   style={{
                     marginBottom: 4,
@@ -298,6 +354,50 @@ const ChatScreen: FC<ChatScreenProps> = ({
               onPress={changeImportant}
             />
           </Dialog>
+          {type == "CUSTOM" && (
+            <Dialog
+              isVisible={showCandidates}
+              onBackdropPress={toggleShowCandidates}
+              overlayStyle={{
+                backgroundColor: "#fff",
+              }}
+              statusBarTranslucent
+            >
+              <Dialog.Title title="Добавить участника" />
+              <ScrollView
+                style={{
+                  maxHeight: 400,
+                }}
+              >
+                {candidates.map((candidate) => (
+                  <Pressable
+                    style={{
+                      marginBottom: 4,
+                      paddingHorizontal: 12,
+                      paddingVertical: 4,
+                      borderRadius: 12,
+                      backgroundColor: "#eee",
+                    }}
+                    key={candidate.id}
+                    onPress={() => addMember(candidate.id)}
+                  >
+                    <Text style={{ fontSize: 14 }}>
+                      {shortFio(
+                        `${candidate.surname} ${candidate.firstname} ${candidate.middlename}`,
+                      )}
+                    </Text>
+                    {(candidate.roleType === "TEACHER" ||
+                      candidate.roleType === "STUDENT" ||
+                      candidate.roleType === "EMPLOYEE") && (
+                        <Text style={{ color: "#999", fontSize: 12 }}>
+                          {roleTypes[candidate.roleType]}
+                        </Text>
+                      )}
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </Dialog>
+          )}
         </>
       )}
       <ScrollView
@@ -382,7 +482,7 @@ const ChatScreen: FC<ChatScreenProps> = ({
               />
             </View>
             <Button
-              onPress={sendMessage}
+              onPress={type == "NEWS" ? sendNews : sendMessage}
               icon={{
                 name: "send",
                 type: "material",
