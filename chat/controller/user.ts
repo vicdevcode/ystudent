@@ -22,6 +22,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
         select: {
           id: true,
           name: true,
+          type: true,
           members: true,
           messages: true,
         },

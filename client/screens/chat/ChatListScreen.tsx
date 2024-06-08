@@ -241,7 +241,7 @@ const ChatListScreen = () => {
                   key={chat.id}
                 >
                   <Text style={{ fontSize: 20 }}>{chat.name}</Text>
-                  <Text>Официальная группа</Text>
+                  <Text>{chat.type}</Text>
                 </Button>
               ))
             ) : (
