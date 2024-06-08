@@ -742,6 +742,7 @@ const ApiProvider: FC<ApiProvidersProps> = ({ children }) => {
       method: "POST",
       headers: {
         Authorization: "Bearer " + token,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     }).then(async (res) => {
@@ -769,6 +770,7 @@ const ApiProvider: FC<ApiProvidersProps> = ({ children }) => {
       method: "POST",
       headers: {
         Authorization: "Bearer " + token,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     }).then(async (res) => {
@@ -797,6 +799,7 @@ const ApiProvider: FC<ApiProvidersProps> = ({ children }) => {
       method: "POST",
       headers: {
         Authorization: "Bearer " + token,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     }).then(async (res) => {
