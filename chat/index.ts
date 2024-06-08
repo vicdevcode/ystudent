@@ -4,7 +4,6 @@ import { createServer } from "node:http";
 import { Server } from "socket.io";
 import amqplib from "amqplib/callback_api";
 import { start } from "./amqp";
-import cors from "cors";
 import { amqpConfig, http_port } from "./config";
 import { JwtUser } from "./jwt";
 import { JwtPayload } from "jsonwebtoken";
@@ -50,16 +49,15 @@ const io = new Server(server, {
 
 io.use(checkAuth);
 app.use(express.json());
-app.use(cors());
 app.use(getUserPayload);
-
-app.get("/api/v1/chat/candidates", getCandidates);
 
 app.get("/api/v1/chat/get-all-chats", getAllChats);
 
 app.get("/api/v1/chat/get-all", getAllUsers);
 
 app.get("/api/v1/chat/get-profile", getProfile);
+
+app.post("/api/v1/chat/candidates", getCandidates);
 
 app.post("/api/v1/chat/add", chatAddMember);
 

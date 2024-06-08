@@ -4,7 +4,17 @@ import { prisma } from "../prisma";
 
 export const getCandidates = async (req: Request, res: Response) => {
   if (!InstanceOfJwt(req.user)) return res.status(401).send();
+  const body = req.body;
+  if (!body) return res.sendStatus(400);
+  if (typeof body["id"] !== "string") return res.status(400).send();
   const user = await prisma.user.findMany({
+    where: {
+      chats: {
+        none: {
+          id: body["id"],
+        },
+      },
+    },
     include: {
       profile: {
         select: {
@@ -49,6 +59,25 @@ export const chatAddMember = async (req: Request, res: Response) => {
     where: {
       id: body.user_id,
     },
+    include: {
+      profile: {
+        select: {
+          id: true,
+          fio: true,
+          role: true,
+          description: true,
+          tags: true,
+        },
+      },
+      chats: {
+        select: {
+          id: true,
+          name: true,
+          members: true,
+          messages: true,
+        },
+      },
+    },
   });
   if (!user) return res.sendStatus(400);
 
@@ -69,7 +98,7 @@ export const chatAddMember = async (req: Request, res: Response) => {
     },
   });
 
-  return res.status(200).json(chat);
+  return res.status(200).json(user);
 };
 
 export const createChat = async (req: Request, res: Response) => {

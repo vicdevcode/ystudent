@@ -59,10 +59,12 @@ export const socketImp = (socket: Socket) => {
       });
       if (chat?.type != "NEWS") return;
 
+      console.log(chat.id, chat.name)
+
       const allUsers = await prisma.user.findMany({
         where: {
           chats: {
-            every: {
+            some: {
               id: chat.id,
             },
           },
@@ -85,9 +87,18 @@ export const socketImp = (socket: Socket) => {
           ...allUsers.map((u) => {
             const userNewsChat = u.chats.find(
               (a) => a.type === "USER_NEWS",
-            )!.id;
+            );
+            if (userNewsChat) 
             return {
-              chatId: userNewsChat,
+              chatId: userNewsChat.id,
+              content: message,
+              senderId: user?.id,
+              is_news: true,
+              senderFio:
+                user.surname + " " + user.firstname + " " + user.middlename,
+            };
+            return {
+              chatId: chat_id,
               content: message,
               senderId: user?.id,
               is_news: true,
@@ -106,8 +117,9 @@ export const socketImp = (socket: Socket) => {
       for (let i = 0; i < allUsers.length; i++) {
         const userNewsChat = allUsers[i].chats.find(
           (a) => a.type === "USER_NEWS",
-        )!.id;
-        socket.to(userNewsChat).emit("receive_message", {
+        );
+        if (userNewsChat) 
+        socket.to(userNewsChat.id).emit("receive_message", {
           senderId: user.id,
           senderFio:
             user.surname + " " + user.firstname + " " + user.middlename,
