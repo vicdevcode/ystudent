@@ -48,9 +48,13 @@ const DeleteAdminFaculty: FC<AddAdminFacultyProps> = (props) => {
     return deleteChatAdmin(token, values);
   };
 
-  useEffect(() => {
+  const getChatAdminss = () => {
     getChatAdmins(token, { id: form.getValues("id"), type: "faculty" });
-  }, [getChatAdmins, token, form]);
+  };
+
+  useEffect(() => {
+    getChatAdminss();
+  }, []);
 
   return (
     <DialogContent>
