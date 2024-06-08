@@ -1,5 +1,5 @@
 import { Button, CheckBox, Dialog, Icon, Input, Text } from "@rneui/base";
-import { PlatformColor, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { FC, useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -12,7 +12,6 @@ import { ScrollView } from "react-native-gesture-handler";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { chatAPI } from "../../lib/config";
 import { Socket, io } from "socket.io-client";
-import { isEnabled } from "react-native/Libraries/Performance/Systrace";
 
 interface ChatScreenProps {
   id: string;
@@ -86,11 +85,8 @@ const ChatScreen: FC<ChatScreenProps> = ({
         }),
       });
       const json = await res.json();
-      console.log(json);
       if (res.status != 200) return;
       if (!json) return;
-      if (!(json["chat_id"] && json["user_id"])) return;
-      console.log(json);
       setIsUserEditor(true);
     } catch (e) {
       console.error(e);
@@ -163,6 +159,15 @@ const ChatScreen: FC<ChatScreenProps> = ({
     }, 500);
   };
 
+  const sendNews = async () => {
+    if (!socket) return;
+    socket.emit("send_news", message);
+    setTimeout(async () => {
+      await getChatsMessages();
+      setMessage("");
+    }, 500);
+  };
+
   const filterMessages = () => {
     if (filteredMessages.length != chatMessages.length) {
       setFilteredMessages(chatMessages);
@@ -219,7 +224,7 @@ const ChatScreen: FC<ChatScreenProps> = ({
         >
           {name}
         </Text>
-        {isUserEditor && (
+        {!(type == "NEWS" || type == "USER_NEWS") && (
           <>
             <Icon
               name="people"
@@ -236,7 +241,7 @@ const ChatScreen: FC<ChatScreenProps> = ({
           </>
         )}
       </View>
-      {isUserEditor && (
+      {!(type == "NEWS" || type == "USER_NEWS") && (
         <>
           <Dialog
             isVisible={showMembers}
