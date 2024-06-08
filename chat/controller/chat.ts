@@ -102,6 +102,24 @@ export const createChat = async (req: Request, res: Response) => {
   res.json(chat);
 };
 
+export const checkAdmin = async (req: Request, res: Response) => {
+  if (!InstanceOfJwt(req.user)) return res.status(401).send();
+  const body = req.body;
+  if (!body) return res.sendStatus(400);
+
+  if (typeof body["chat_id"] !== "string") return res.status(400).send();
+  if (typeof body["user_id"] !== "string") return res.status(400).send();
+
+  const chat = await prisma.chatOnAdmins.findUnique({
+    where: {
+      chatId_userId: {
+        chatId: body["chat_id"],
+        userId: body["user_id"],
+      },
+    },
+  });
+  res.status(200).json(chat);
+};
 export const addAdmin = async (req: Request, res: Response) => {
   if (!InstanceOfJwt(req.user)) return res.status(401).send();
   const body = req.body;

@@ -162,6 +162,7 @@ const ChatListScreen = () => {
           name={selectedChat.name}
           messages={selectedChat.messages}
           members={selectedChat.members}
+          type={selectedChat.type}
           back={back}
         />
       ) : (
@@ -241,7 +242,13 @@ const ChatListScreen = () => {
                   key={chat.id}
                 >
                   <Text style={{ fontSize: 20 }}>{chat.name}</Text>
-                  <Text>{chat.type}</Text>
+                  <Text>
+                    {chat.type === "OFFICIAL" && "Официальный чат"}
+                    {chat.type === "NEWS" && "Новостной чат"}
+                    {chat.type === "USER_NEWS" && "Персональные новости"}
+                    {chat.type === "CUSTOM" && "Пользовательский чат"}
+                    {chat.type === "EDUCATIONAL" && "Чат дисциплины"}
+                  </Text>
                 </Button>
               ))
             ) : (

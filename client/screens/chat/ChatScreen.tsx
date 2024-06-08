@@ -26,6 +26,7 @@ interface ChatScreenProps {
   }[];
   messages: Message[];
   token: string;
+  type: string;
   back: () => void;
 }
 
@@ -45,6 +46,7 @@ const ChatScreen: FC<ChatScreenProps> = ({
   members,
   back,
   token,
+  type,
 }) => {
   const [chatMessages, setMessages] = useState<Message[]>(messages);
   const [message, setMessage] = useState<string>("");
@@ -137,6 +139,7 @@ const ChatScreen: FC<ChatScreenProps> = ({
       setFilteredMessages(chatMessages.filter((msg) => msg.important));
     }
   };
+
   const joinRoom = (good_socket: Socket, name: string) => {
     if (!good_socket) return;
     good_socket.emit("join_room", name);
@@ -184,74 +187,82 @@ const ChatScreen: FC<ChatScreenProps> = ({
         >
           {name}
         </Text>
-        <Icon
-          name="people"
-          type="material"
-          size={24}
-          onPress={toggleShowMembers}
-        />
-        <Icon
-          name="feedback"
-          type="material"
-          size={24}
-          onPress={filterMessages}
-        />
+        {!(type == "NEWS" || type == "USER_NEWS") && (
+          <>
+            <Icon
+              name="people"
+              type="material"
+              size={24}
+              onPress={toggleShowMembers}
+            />
+            <Icon
+              name="feedback"
+              type="material"
+              size={24}
+              onPress={filterMessages}
+            />
+          </>
+        )}
       </View>
-      <Dialog
-        isVisible={showMembers}
-        onBackdropPress={toggleShowMembers}
-        overlayStyle={{
-          backgroundColor: "#fff",
-        }}
-        statusBarTranslucent
-      >
-        <Dialog.Title title="Участники" />
-        <ScrollView
-          style={{
-            maxHeight: 400,
-          }}
-        >
-          {members.map((member) => (
-            <View
+      {!(type == "NEWS" || type == "USER_NEWS") && (
+        <>
+          <Dialog
+            isVisible={showMembers}
+            onBackdropPress={toggleShowMembers}
+            overlayStyle={{
+              backgroundColor: "#fff",
+            }}
+            statusBarTranslucent
+          >
+            <Dialog.Title title="Участники" />
+            <ScrollView
               style={{
-                marginBottom: 4,
-                paddingHorizontal: 12,
-                paddingVertical: 4,
-                borderRadius: 12,
-                backgroundColor: "#eee",
+                maxHeight: 400,
               }}
-              key={member.id}
             >
-              <Text style={{ fontSize: 14 }}>
-                {shortFio(
-                  `${member.surname} ${member.firstname} ${member.middlename}`,
-                )}
-              </Text>
-              {(member.roleType === "TEACHER" ||
-                member.roleType === "STUDENT") && (
-                  <Text style={{ color: "#999", fontSize: 12 }}>
-                    {roleTypes[member.roleType]}
+              {members.map((member) => (
+                <View
+                  style={{
+                    marginBottom: 4,
+                    paddingHorizontal: 12,
+                    paddingVertical: 4,
+                    borderRadius: 12,
+                    backgroundColor: "#eee",
+                  }}
+                  key={member.id}
+                >
+                  <Text style={{ fontSize: 14 }}>
+                    {shortFio(
+                      `${member.surname} ${member.firstname} ${member.middlename}`,
+                    )}
                   </Text>
-                )}
-            </View>
-          ))}
-        </ScrollView>
-      </Dialog>
-      <Dialog
-        isVisible={showChangeImportant}
-        onBackdropPress={() => setShowChangeImportant(!showChangeImportant)}
-        overlayStyle={{
-          backgroundColor: "#fff",
-        }}
-        statusBarTranslucent
-      >
-        <Dialog.Title title="Важность" />
-        <CheckBox
-          title="Это сообщение важное?"
-          checked={checkImportant}
-          onPress={changeImportant}
-        />
-      </Dialog>
+                  {(member.roleType === "TEACHER" ||
+                    member.roleType === "STUDENT") && (
+                      <Text style={{ color: "#999", fontSize: 12 }}>
+                        {roleTypes[member.roleType]}
+                      </Text>
+                    )}
+                </View>
+              ))}
+            </ScrollView>
+          </Dialog>
+          <Dialog
+            isVisible={showChangeImportant}
+            onBackdropPress={() => setShowChangeImportant(!showChangeImportant)}
+            overlayStyle={{
+              backgroundColor: "#fff",
+            }}
+            statusBarTranslucent
+          >
+            <Dialog.Title title="Важность" />
+            <CheckBox
+              title="Это сообщение важное?"
+              checked={checkImportant}
+              onPress={changeImportant}
+            />
+          </Dialog>
+        </>
+      )}
       <ScrollView
         contentContainerStyle={{
           justifyContent: "flex-end",
@@ -271,6 +282,7 @@ const ChatScreen: FC<ChatScreenProps> = ({
             filteredMessages.map((msg, i) => (
               <Pressable
                 onLongPress={() =>
+                  !(type == "NEWS" || type == "USER_NEWS") &&
                   toggleShowChangeImportant(msg.id as string, msg.important)
                 }
                 key={i}
