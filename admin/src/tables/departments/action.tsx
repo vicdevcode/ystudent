@@ -9,8 +9,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import { FC, useState } from "react";
-import AddAdminFaculty from "./add-admin";
-import DeleteAdminFaculty from "./delete-admin";
 import EditDepartment from "./edit";
 import DeleteDepartment from "./delete";
 import AddAdminDepartment from "./add-admin";

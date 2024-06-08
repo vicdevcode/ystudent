@@ -11,7 +11,6 @@ import { MoreHorizontal } from "lucide-react";
 import EditFaculty from "./edit";
 import DeleteFaculty from "./delete";
 import { FC, useState } from "react";
-import { DialogContent } from "@radix-ui/react-dialog";
 import AddAdminFaculty from "./add-admin";
 import DeleteAdminFaculty from "./delete-admin";
 

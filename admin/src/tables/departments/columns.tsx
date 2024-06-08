@@ -1,17 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
 import CreateDepartment from "./create";
-import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
-import EditDepartment from "./edit";
-import DeleteDepartment from "./delete";
 import { ActionButtonDepartment } from "./action";
 
 export type Departments = {

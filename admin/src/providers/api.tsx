@@ -751,11 +751,12 @@ const ApiProvider: FC<ApiProvidersProps> = ({ children }) => {
       for (let i = 0; i < json.length; i++) {
         data.push({
           id: json[i]["id"],
-          name: `${json[i]["user"]["surname"]} ${json[i]["user"]["firstname"]} ${json[i]["user"]["middlename"]}`,
-          firstname: json[i]["user"]["firstname"],
-          surname: json[i]["user"]["surname"],
-          middlename: json[i]["user"]["middlename"],
-          email: json[i]["user"]["email"],
+          user_id: json[i]["id"],
+          name: `${json[i]["surname"]} ${json[i]["firstname"]} ${json[i]["middlename"]}`,
+          firstname: json[i]["firstname"],
+          surname: json[i]["surname"],
+          middlename: json[i]["middlename"],
+          email: json[i]["email"],
         });
       }
       setChatAdmins(data);
