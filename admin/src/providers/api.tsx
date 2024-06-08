@@ -1,20 +1,26 @@
 import { useToast } from "@/components/ui/use-toast";
 import {
+  CreateChatAdmin,
   CreateDepartment,
+  CreateEmployee,
   CreateFaculty,
   CreateGroup,
   CreateStudent,
   CreateTeacher,
   EditDepartment,
+  EditEmployee,
   EditFaculty,
   EditGroup,
   EditStudent,
   EditTeacher,
+  GetChatAdmins,
 } from "@/lib/types";
 import { Departments } from "@/tables/departments/columns";
 import { Faculties } from "@/tables/faculties/columns";
 import { Groups } from "@/tables/groups/columns";
 import { Teachers } from "@/tables/teachers/columns";
+import { Students } from "@/tables/students/columns";
+import { Employees } from "@/tables/employees/columns";
 import {
   FC,
   PropsWithChildren,
@@ -25,7 +31,6 @@ import {
 } from "react";
 import { useAuth } from "./auth";
 import { useLocation } from "react-router-dom";
-import { Students } from "@/tables/students/columns";
 
 interface ApiContext {
   faculties: Faculties[];
@@ -33,26 +38,35 @@ interface ApiContext {
   groups: Groups[];
   teachers: Teachers[];
   students: Students[];
+  employees: Employees[];
+  chatAdmins: Teachers[] | Employees[];
   getFaculties: (token: string) => Promise<void>;
   getDepartments: (token: string) => Promise<void>;
   getGroups: (token: string) => Promise<void>;
   getTeachers: (token: string) => Promise<void>;
   getStudents: (token: string) => Promise<void>;
+  getEmployees: (token: string) => Promise<void>;
   createFaculty: (token: string, data: CreateFaculty) => Promise<void>;
   createDepartment: (token: string, data: CreateDepartment) => Promise<void>;
   createGroup: (token: string, data: CreateGroup) => Promise<void>;
   createTeacher: (token: string, data: CreateTeacher) => Promise<void>;
   createStudent: (token: string, data: CreateStudent) => Promise<void>;
+  createEmployee: (token: string, data: CreateEmployee) => Promise<void>;
   editFaculty: (token: string, data: EditFaculty) => Promise<void>;
   editDepartment: (token: string, data: EditDepartment) => Promise<void>;
   editGroup: (token: string, data: EditGroup) => Promise<void>;
   editTeacher: (token: string, data: EditTeacher) => Promise<void>;
   editStudent: (token: string, data: EditStudent) => Promise<void>;
+  editEmployee: (token: string, data: EditEmployee) => Promise<void>;
   deleteFaculty: (token: string, id: string) => Promise<void>;
   deleteDepartment: (token: string, id: string) => Promise<void>;
   deleteGroup: (token: string, id: string) => Promise<void>;
   deleteTeacher: (token: string, id: string) => Promise<void>;
   deleteStudent: (token: string, id: string) => Promise<void>;
+  deleteEmployee: (token: string, id: string) => Promise<void>;
+  getChatAdmins: (token: string, data: GetChatAdmins) => Promise<void>;
+  addChatAdmin: (token: string, data: CreateChatAdmin) => Promise<void>;
+  deleteChatAdmin: (token: string, data: CreateChatAdmin) => Promise<void>;
 }
 
 const defaultValues: ApiContext = {
@@ -61,26 +75,35 @@ const defaultValues: ApiContext = {
   groups: [],
   teachers: [],
   students: [],
+  employees: [],
+  chatAdmins: [],
   getFaculties: async () => { },
   getDepartments: async () => { },
   getGroups: async () => { },
   getTeachers: async () => { },
   getStudents: async () => { },
+  getEmployees: async () => { },
   createFaculty: async () => { },
   createDepartment: async () => { },
   createGroup: async () => { },
   createTeacher: async () => { },
   createStudent: async () => { },
+  createEmployee: async () => { },
   editFaculty: async () => { },
   editDepartment: async () => { },
   editGroup: async () => { },
   editTeacher: async () => { },
   editStudent: async () => { },
+  editEmployee: async () => { },
   deleteFaculty: async () => { },
   deleteDepartment: async () => { },
   deleteGroup: async () => { },
   deleteTeacher: async () => { },
   deleteStudent: async () => { },
+  deleteEmployee: async () => { },
+  getChatAdmins: async () => { },
+  addChatAdmin: async () => { },
+  deleteChatAdmin: async () => { },
 };
 
 const Context = createContext(defaultValues);
@@ -99,6 +122,10 @@ const ApiProvider: FC<ApiProvidersProps> = ({ children }) => {
   const [groups, setGroups] = useState<Groups[]>(defaultValues.groups);
   const [teachers, setTeachers] = useState<Teachers[]>(defaultValues.teachers);
   const [students, setStudents] = useState<Students[]>(defaultValues.students);
+  const [employees, setEmployees] = useState<Employees[]>(
+    defaultValues.employees,
+  );
+  const [chatAdmins, setChatAdmins] = useState<Teachers[] | Employees[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -119,7 +146,16 @@ const ApiProvider: FC<ApiProvidersProps> = ({ children }) => {
         getGroups(token);
         getTeachers(token);
         getStudents(token);
+        getEmployees(token);
+        getDepartments(token);
         break;
+      default:
+        getFaculties(token);
+        getDepartments(token);
+        getGroups(token);
+        getEmployees(token);
+        getTeachers(token);
+        getStudents(token);
     }
   }, [token, location]);
 
@@ -206,6 +242,7 @@ const ApiProvider: FC<ApiProvidersProps> = ({ children }) => {
       for (let i = 0; i < json["teachers"].length; i++) {
         data.push({
           id: json["teachers"][i]["id"],
+          user_id: json["teachers"][i]["user"]["id"],
           name: `${json["teachers"][i]["user"]["surname"]} ${json["teachers"][i]["user"]["firstname"]} ${json["teachers"][i]["user"]["middlename"]}`,
           firstname: json["teachers"][i]["user"]["firstname"],
           surname: json["teachers"][i]["user"]["surname"],
@@ -241,6 +278,32 @@ const ApiProvider: FC<ApiProvidersProps> = ({ children }) => {
         });
       }
       setStudents(data);
+    });
+  };
+
+  const getEmployees = async (token: string) => {
+    if (!token) return;
+    return fetch(import.meta.env.VITE_MAIN_API + "/employees", {
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    }).then(async (res) => {
+      const json = await res.json();
+      if (res.status != 200) return;
+      const data = [];
+      for (let i = 0; i < json["employees"].length; i++) {
+        data.push({
+          id: json["employees"][i]["id"],
+          user_id: json["employees"][i]["user"]["id"],
+          name: `${json["employees"][i]["user"]["surname"]} ${json["employees"][i]["user"]["firstname"]} ${json["employees"][i]["user"]["middlename"]}`,
+          firstname: json["employees"][i]["user"]["firstname"],
+          surname: json["employees"][i]["user"]["surname"],
+          middlename: json["employees"][i]["user"]["middlename"],
+          email: json["employees"][i]["user"]["email"],
+        });
+      }
+      setEmployees(data);
     });
   };
 
@@ -366,6 +429,32 @@ const ApiProvider: FC<ApiProvidersProps> = ({ children }) => {
       getStudents(token);
       toast({
         title: "Студент был создан",
+        description: "Пароль: " + json["password"],
+      });
+    });
+  };
+
+  const createEmployee = async (token: string, data: CreateTeacher) => {
+    if (!token) return;
+    return fetch(import.meta.env.VITE_MAIN_API + "/employee/", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify(data),
+    }).then(async (res) => {
+      const json = await res.json();
+      if (res.status != 200) {
+        toast({
+          variant: "destructive",
+          title: "ERROR",
+          description: json["message"],
+        });
+        return;
+      }
+      getEmployees(token);
+      toast({
+        title: "Преподаватель был создан",
         description: "Пароль: " + json["password"],
       });
     });
@@ -516,6 +605,11 @@ const ApiProvider: FC<ApiProvidersProps> = ({ children }) => {
     });
   };
 
+  const editEmployee = async (token: string, data: EditTeacher) => {
+    if (!token) return;
+    console.log("implement me!", data);
+  };
+
   const deleteFaculty = async (token: string, id: string) => {
     if (!token) return;
     return fetch(import.meta.env.VITE_MAIN_API + "/faculty/" + id, {
@@ -637,32 +731,128 @@ const ApiProvider: FC<ApiProvidersProps> = ({ children }) => {
     });
   };
 
+  const deleteEmployee = async (token: string, id: string) => {
+    if (!token) return;
+    console.log("implement me!", id);
+  };
+
+  const getChatAdmins = async (token: string, data: GetChatAdmins) => {
+    if (!token) return;
+    return fetch(import.meta.env.VITE_MAIN_API + "/chat/get-admins/", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify(data),
+    }).then(async (res) => {
+      const json = await res.json();
+      if (res.status != 200) return;
+      const data = [];
+      for (let i = 0; i < json.length; i++) {
+        data.push({
+          id: json[i]["id"],
+          name: `${json[i]["user"]["surname"]} ${json[i]["user"]["firstname"]} ${json[i]["user"]["middlename"]}`,
+          firstname: json[i]["user"]["firstname"],
+          surname: json[i]["user"]["surname"],
+          middlename: json[i]["user"]["middlename"],
+          email: json[i]["user"]["email"],
+        });
+      }
+      setChatAdmins(data);
+    });
+  };
+
+  const addChatAdmin = async (token: string, data: CreateChatAdmin) => {
+    if (!token) return;
+    return fetch(import.meta.env.VITE_MAIN_API + "/chat/add-admin/", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify(data),
+    }).then(async (res) => {
+      if (res.status != 200) {
+        const json = await res.json();
+        toast({
+          variant: "destructive",
+          title: "ERROR",
+          description: json["message"],
+        });
+        return;
+      }
+      getChatAdmins(token, {
+        id: data.id,
+        type: data.type,
+      });
+      toast({
+        title: "редактор успешно добавлен",
+      });
+    });
+  };
+
+  const deleteChatAdmin = async (token: string, data: CreateChatAdmin) => {
+    if (!token) return;
+    return fetch(import.meta.env.VITE_MAIN_API + "/chat/delete-admin/", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify(data),
+    }).then(async (res) => {
+      if (res.status != 200) {
+        const json = await res.json();
+        toast({
+          variant: "destructive",
+          title: "ERROR",
+          description: json["message"],
+        });
+        return;
+      }
+      getChatAdmins(token, {
+        id: data.id,
+        type: data.type,
+      });
+      toast({
+        title: "редактор успешно удален",
+      });
+    });
+  };
+
   const exposed = {
     faculties,
     departments,
     groups,
     teachers,
     students,
+    employees,
+    chatAdmins,
     getFaculties,
     getDepartments,
     getGroups,
     getTeachers,
     getStudents,
+    getEmployees,
     createFaculty,
     createDepartment,
     createGroup,
     createTeacher,
     createStudent,
+    createEmployee,
     editFaculty,
     editDepartment,
     editGroup,
     editTeacher,
     editStudent,
+    editEmployee,
     deleteFaculty,
     deleteDepartment,
     deleteGroup,
     deleteTeacher,
     deleteStudent,
+    deleteEmployee,
+    getChatAdmins,
+    addChatAdmin,
+    deleteChatAdmin,
   };
 
   return <Context.Provider value={exposed}>{children}</Context.Provider>;

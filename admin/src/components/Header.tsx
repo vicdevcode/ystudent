@@ -9,6 +9,9 @@ const Header = () => {
         <div className="py-3 flex justify-between items-center">
           <ul className="flex gap-10">
             <li>
+              <a href="/">Главная</a>
+            </li>
+            <li>
               <a href="/faculties">Факультеты</a>
             </li>
             <li>

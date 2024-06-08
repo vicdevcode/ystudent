@@ -1,17 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
-import EditFaculty from "./edit";
-import DeleteFaculty from "./delete";
 import CreateFaculty from "./create";
+import { ActionButton } from "./action";
 
 export type Faculties = {
   id: string;
@@ -35,26 +24,7 @@ export const columns: ColumnDef<Faculties>[] = [
     enableResizing: false,
     header: () => <CreateFaculty />,
     cell: ({ row }) => (
-      <AlertDialog>
-        <Dialog>
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <MoreHorizontal />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem>
-                <DialogTrigger>Редактировать</DialogTrigger>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <AlertDialogTrigger>Удалить</AlertDialogTrigger>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-            <EditFaculty id={row.getValue("id")} name={row.getValue("name")} />
-            <DeleteFaculty id={row.getValue("id")} />
-          </DropdownMenu>
-        </Dialog>
-      </AlertDialog>
+      <ActionButton id={row.getValue("id")} name={row.getValue("name")} />
     ),
   },
 ];

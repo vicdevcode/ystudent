@@ -101,3 +101,138 @@ export const createChat = async (req: Request, res: Response) => {
 
   res.json(chat);
 };
+
+export const addAdmin = async (req: Request, res: Response) => {
+  if (!InstanceOfJwt(req.user)) return res.status(401).send();
+  const body = req.body;
+  if (!body) return res.sendStatus(400);
+
+  if (typeof body["id"] !== "string") return res.status(400).send();
+  if (typeof body["user_id"] !== "string") return res.status(400).send();
+  if (typeof body["type"] !== "string") return res.status(400).send();
+
+  let chatId = "";
+  let userId = "";
+  const checkUser = await prisma.user.findUnique({
+    where: {
+      id: body["user_id"],
+    },
+  });
+  if (body["type"] === "faculty") {
+    const faculty = await prisma.faculty.findUnique({
+      where: {
+        id: body["id"],
+      },
+    });
+    if (faculty) chatId = faculty.chatId as string;
+    if (checkUser?.roleType == "EMPLOYEE") userId = checkUser.id;
+  }
+  if (body["type"] === "department") {
+    const department = await prisma.department.findUnique({
+      where: {
+        id: body["id"],
+      },
+    });
+    if (department) chatId = department.chatId as string;
+    if (checkUser?.roleType == "EMPLOYEE" || checkUser?.roleType == "TEACHER")
+      userId = checkUser.id;
+  }
+  if (chatId === "" || userId === "") return res.status(400).send();
+  const chat = await prisma.chatOnAdmins.create({
+    data: {
+      chatId: chatId,
+      userId: userId,
+    },
+  });
+  res.json(chat);
+};
+
+export const deleteAdmin = async (req: Request, res: Response) => {
+  if (!InstanceOfJwt(req.user)) return res.status(401).send();
+  const body = req.body;
+  if (!body) return res.sendStatus(400);
+
+  if (typeof body["id"] !== "string") return res.status(400).send();
+  if (typeof body["user_id"] !== "string") return res.status(400).send();
+  if (typeof body["type"] !== "string") return res.status(400).send();
+
+  let chatId = "";
+  let userId = "";
+  const checkUser = await prisma.user.findUnique({
+    where: {
+      id: body["user_id"],
+    },
+  });
+  if (body["type"] === "faculty") {
+    const faculty = await prisma.faculty.findUnique({
+      where: {
+        id: body["id"],
+      },
+    });
+    if (faculty) chatId = faculty.chatId as string;
+    if (checkUser?.roleType == "EMPLOYEE") userId = checkUser.id;
+  }
+  if (body["type"] === "department") {
+    const department = await prisma.department.findUnique({
+      where: {
+        id: body["id"],
+      },
+    });
+    if (department) chatId = department.chatId as string;
+    if (checkUser?.roleType == "EMPLOYEE" || checkUser?.roleType == "TEACHER")
+      userId = checkUser.id;
+  }
+  if (chatId === "" || userId === "") return res.status(400).send();
+  const chat = await prisma.chatOnAdmins.delete({
+    where: {
+      chatId_userId: {
+        userId: userId,
+        chatId: chatId,
+      },
+    },
+  });
+  res.json(chat);
+};
+
+export const getAdmins = async (req: Request, res: Response) => {
+  if (!InstanceOfJwt(req.user)) return res.status(401).send();
+  const body = req.body;
+  if (!body) return res.sendStatus(400);
+
+  if (typeof body["id"] !== "string") return res.status(400).send();
+  if (typeof body["type"] !== "string") return res.status(400).send();
+
+  let chatId = "";
+  if (body["type"] === "faculty") {
+    const faculty = await prisma.faculty.findUnique({
+      where: {
+        id: body["id"],
+      },
+    });
+
+    if (!faculty?.chatId) return res.status(400).send();
+    chatId = faculty.chatId;
+  } else if (body["type"] === "department") {
+    const department = await prisma.department.findUnique({
+      where: {
+        id: body["id"],
+      },
+    });
+
+    if (!department?.chatId) return res.status(400).send();
+    chatId = department.chatId;
+  }
+
+  const admins = await prisma.chatOnAdmins.findMany({
+    where: {
+      chatId: chatId,
+    },
+  });
+
+  const users = await prisma.user.findMany({
+    where: {
+      id: { in: admins.map((a) => a.userId) },
+    },
+  });
+  res.json(users);
+};

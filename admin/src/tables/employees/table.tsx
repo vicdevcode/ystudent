@@ -27,7 +27,7 @@ function setWidthColumns(id: string, size: string | number): CSSProperties {
   return {};
 }
 
-export function TeachersTable<TData, TValue>({
+export function EmployeesTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {

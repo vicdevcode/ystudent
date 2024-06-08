@@ -12,6 +12,7 @@ import {
 import { MoreHorizontal } from "lucide-react";
 import EditDepartment from "./edit";
 import DeleteDepartment from "./delete";
+import { ActionButtonDepartment } from "./action";
 
 export type Departments = {
   id: string;
@@ -45,30 +46,11 @@ export const columns: ColumnDef<Departments>[] = [
     enableResizing: false,
     header: () => <CreateDepartment />,
     cell: ({ row }) => (
-      <AlertDialog>
-        <Dialog>
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <MoreHorizontal />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem>
-                <DialogTrigger>Редактировать</DialogTrigger>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <AlertDialogTrigger>Удалить</AlertDialogTrigger>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-            <EditDepartment
-              id={row.getValue("id")}
-              name={row.getValue("name")}
-              faculty_id={row.getValue("faculty_id")}
-            />
-            <DeleteDepartment id={row.getValue("id")} />
-          </DropdownMenu>
-        </Dialog>
-      </AlertDialog>
+      <ActionButtonDepartment
+        id={row.getValue("id")}
+        name={row.getValue("name")}
+        faculty_id={row.getValue("faculty_id")}
+      />
     ),
   },
 ];

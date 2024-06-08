@@ -21,8 +21,10 @@ interface ComboboxProps {
   value: string;
   array: {
     id: string;
+    user_id?: string;
     name: string;
   }[];
+  is_user_id?: boolean;
   placeholder: string;
   notfound: string;
   setValue: (value: string) => void;
@@ -34,6 +36,7 @@ const Combobox: FC<ComboboxProps> = ({
   placeholder,
   notfound,
   setValue,
+  is_user_id = false,
 }) => {
   return (
     <Popover>
@@ -47,7 +50,13 @@ const Combobox: FC<ComboboxProps> = ({
               !value && "text-muted-foreground",
             )}
           >
-            {value ? array.find((el) => el.id === value)?.name : placeholder}
+            {is_user_id
+              ? value
+                ? array.find((el) => el.user_id === value)?.name
+                : placeholder
+              : value
+                ? array.find((el) => el.id === value)?.name
+                : placeholder}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </FormControl>
@@ -61,13 +70,21 @@ const Combobox: FC<ComboboxProps> = ({
               {array.map((el) => (
                 <CommandItem
                   value={el.name}
-                  key={el.id}
-                  onSelect={() => setValue(el.id)}
+                  key={is_user_id ? el.user_id : el.id}
+                  onSelect={() =>
+                    setValue(is_user_id && el.user_id ? el.user_id : el.id)
+                  }
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      el.id === value ? "opacity-100" : "opacity-0",
+                      is_user_id
+                        ? el.user_id === value
+                          ? "opacity-100"
+                          : "opacity-0"
+                        : el.id === value
+                          ? "opacity-100"
+                          : "opacity-0",
                     )}
                   />
                   {el.name}

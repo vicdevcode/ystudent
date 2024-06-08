@@ -9,8 +9,11 @@ import { amqpConfig, http_port } from "./config";
 import { JwtUser } from "./jwt";
 import { JwtPayload } from "jsonwebtoken";
 import {
+  addAdmin,
   chatAddMember,
   createChat,
+  deleteAdmin,
+  getAdmins,
   getAllChats,
   getCandidates,
 } from "./controller/chat";
@@ -70,6 +73,12 @@ app.post("/api/v1/chat/change-profile", changeProfile);
 app.post("/api/v1/chat/important", addImportant);
 
 app.post("/api/v1/chat/create-tag", createTag);
+
+app.post("/api/v1/chat/add-admin", addAdmin);
+
+app.post("/api/v1/chat/delete-admin", deleteAdmin);
+
+app.post("/api/v1/chat/get-admins", getAdmins);
 
 io.on("connection", socketImp);
 

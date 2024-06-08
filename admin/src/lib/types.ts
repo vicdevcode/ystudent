@@ -24,6 +24,14 @@ export interface EditTeacher {
   email?: string;
 }
 
+export interface EditEmployee {
+  id: string;
+  firstname?: string;
+  middlename?: string;
+  surname?: string;
+  email?: string;
+}
+
 export interface EditStudent {
   id: string;
   firstname?: string;
@@ -55,10 +63,28 @@ export interface CreateTeacher {
   email: string;
 }
 
+export interface CreateEmployee {
+  firstname: string;
+  middlename?: string;
+  surname: string;
+  email: string;
+}
+
 export interface CreateStudent {
   firstname: string;
   middlename?: string;
   surname: string;
   email: string;
   group_id: string;
+}
+
+export interface CreateChatAdmin {
+  id: string;
+  user_id: string;
+  type: "faculty" | "department";
+}
+
+export interface GetChatAdmins {
+  id: string;
+  type: "faculty" | "department";
 }

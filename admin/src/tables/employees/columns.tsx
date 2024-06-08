@@ -13,7 +13,7 @@ import { MoreHorizontal } from "lucide-react";
 import EditTeacher from "./edit";
 import DeleteTeacher from "./delete";
 
-export type Teachers = {
+export type Employees = {
   id: string;
   user_id: string;
   firstname: string;
@@ -23,7 +23,7 @@ export type Teachers = {
   email: string;
 };
 
-export const columns: ColumnDef<Teachers>[] = [
+export const columns: ColumnDef<Employees>[] = [
   {
     accessorKey: "id",
     header: "id",
